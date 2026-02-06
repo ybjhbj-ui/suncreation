@@ -88,6 +88,8 @@ button[kind="primary"], .stButton > button {{
 if EFFET_SPECIAL == "snow": st.snow()
 
 # --- ⚙️ SECRETS & TÉLÉCOMMANDE ---
+MDP_DE_SECOURS = "SunCreation-Ultra-Secure-2026-!!#"
+SECRET_PASSWORD = st.secrets.get("ADMIN_PASSWORD", MDP_DE_SECOURS)
 EMAIL_PRO = st.secrets.get("EMAIL_RECEPTION", "sncreat24@gmail.com")
 ETAT_VACANCES_GLOBAL = st.secrets.get("MODE_VACANCES", "NON") 
 
@@ -111,13 +113,12 @@ LIVRAISON_OPTIONS = {"📍 Retrait Gonesse": 0, "📦 Colis IDF - 12€": 12, "�
 # =========================================================
 st.markdown('<p class="main-title">Sun Creation</p>', unsafe_allow_html=True)
 
-# Logo centré sous le titre
 col_logo_l, col_logo_c, col_logo_r = st.columns([1, 1.5, 1])
 with col_logo_c:
     try: st.image("logo.jpg", use_container_width=True)
     except: st.markdown("<h2 style='text-align: center;'>🌹</h2>", unsafe_allow_html=True)
 
-st.markdown("<br>", unsafe_allow_html=True) # Petit espace
+st.markdown("<br>", unsafe_allow_html=True)
 choix = st.radio("Je souhaite commander :", ["🌹 Un Bouquet", "🍫 Box Chocolat", "❤️ Box Love (I ❤️ U)"])
 st.markdown("---")
 
@@ -134,10 +135,19 @@ if choix == "🌹 Un Bouquet":
     with col2:
         try: st.image(f"bouquet_{taille}.jpg", use_container_width=True)
         except: st.caption("📷 (Image)")
-    couleur_rose = st.selectbox("Couleur des roses", COULEURS_ROSES)
-    choix_emballage = st.selectbox("Style d'emballage", ["Noir", "Blanc", "Rose", "Rouge", "Bordeaux", "Vert", "Bleu", "Crème", "Dior Noir (+5€)", "Dior Rose (+5€)", "Chanel (+5€)", "LV (+5€)"])
+        
+    # MODIF: st.pills au lieu de selectbox/multiselect pour éviter le clavier
+    couleur_rose = st.pills("Couleur des roses", COULEURS_ROSES, selection_mode="single")
+    if not couleur_rose: couleur_rose = "Non défini"
+    
+    choix_emballage = st.pills("Style d'emballage", ["Noir", "Blanc", "Rose", "Rouge", "Bordeaux", "Vert", "Bleu", "Crème", "Dior Noir (+5€)", "Dior Rose (+5€)", "Chanel (+5€)", "LV (+5€)"], selection_mode="single")
+    if not choix_emballage: choix_emballage = "Noir"
+    
     prix_papier = 5 if "(+5€)" in choix_emballage else 0
-    options_choisies = st.multiselect("Ajouter des éléments :", list(ACCESSOIRES_BOUQUET.keys()))
+    
+    options_choisies = st.pills("Ajouter des éléments :", list(ACCESSOIRES_BOUQUET.keys()), selection_mode="multi")
+    if not options_choisies: options_choisies = []
+    
     details_sup = ""
     if "🎗️ Bande avec un prénom (+15€)" in options_choisies:
         txt = st.text_input("📝 Prénom pour la bande :")
@@ -162,10 +172,16 @@ elif choix == "🍫 Box Chocolat":
     with col2:
         try: st.image(f"box_{taille_box.lower()}.jpg", use_container_width=True)
         except: st.caption("📷 (Image)")
-    liste_chocolats = st.multiselect("Choisissez les chocolats :", ["Kinder Bueno", "Ferrero Rocher", "Milka", "Raffaello", "Schoko-Bons"])
+        
+    liste_chocolats = st.pills("Choisissez les chocolats :", ["Kinder Bueno", "Ferrero Rocher", "Milka", "Raffaello", "Schoko-Bons"], selection_mode="multi")
+    if not liste_chocolats: liste_chocolats = []
+    
     fleur_eternelle = st.checkbox("Ajouter des Roses Éternelles ?")
-    couleur_fleur_info = st.selectbox("Couleur des roses :", COULEURS_ROSES) if fleur_eternelle else ""
-    options_choisies = st.multiselect("Ajouter des options :", list(ACCESSOIRES_BOX_CHOCO.keys()))
+    couleur_fleur_info = st.pills("Couleur des roses :", COULEURS_ROSES, selection_mode="single") if fleur_eternelle else ""
+    
+    options_choisies = st.pills("Ajouter des options :", list(ACCESSOIRES_BOX_CHOCO.keys()), selection_mode="multi")
+    if not options_choisies: options_choisies = []
+    
     details_sup = ""
     if "🅰️ Initiale (+5€)" in options_choisies:
         txt = st.text_input("📝 Quelle initiale ?")
@@ -183,8 +199,13 @@ else:
     st.header("❤️ Box Love Signature")
     try: st.image("box_love.jpg", use_container_width=True)
     except: pass
-    couleur_love = st.selectbox("Couleur des fleurs", COULEURS_ROSES)
-    liste_chocolats = st.multiselect("Quels chocolats ?", ["Kinder Bueno", "Ferrero Rocher"])
+    
+    couleur_love = st.pills("Couleur des fleurs", COULEURS_ROSES, selection_mode="single")
+    if not couleur_love: couleur_love = "Non défini"
+    
+    liste_chocolats = st.pills("Quels chocolats ?", ["Kinder Bueno", "Ferrero Rocher"], selection_mode="multi")
+    if not liste_chocolats: liste_chocolats = []
+    
     prix_total = PRIX_BOX_FIXE[choix]
     details_produit_mail = f"BOX LOVE (I ❤️ U)\n- Fleurs : {couleur_love}\n- Chocolats : {', '.join(liste_chocolats)}"
     details_options_mail = "Aucune option sup."
