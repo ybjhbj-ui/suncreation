@@ -42,19 +42,16 @@ h1, h2, h3 {{ font-family: 'Playfair Display', serif !important; color: {THEME['
     font-family: 'Montserrat', sans-serif !important; color: #2D1E12 !important; font-weight: 700 !important;
 }}
 
-/* Style des menus déroulants et champs */
-div[data-baseweb="select"] > div, div[data-baseweb="input"] > div, .stDateInput div, textarea {{
-    background-color: #4A3728 !important; border: 1px solid #D4AF37 !important; border-radius: 8px !important;
+/* VISIBILITÉ MENUS DÉROULANTS */
+div[data-baseweb="select"] > div {{
+    background-color: #4A3728 !important; border: 1px solid #D4AF37 !important; color: white !important;
 }}
-
-/* Couleur du texte dans les menus */
-div[data-baseweb="select"] span {{
-    color: white !important; font-weight: 600 !important;
+div[data-baseweb="select"] span {{ color: white !important; font-weight: 600 !important; }}
+div[data-baseweb="input"] > div, textarea {{
+    background-color: #4A3728 !important; border: 1px solid #D4AF37 !important; color: white !important;
 }}
-
-input, textarea, .stSelectbox div div {{
-    color: white !important; -webkit-text-fill-color: white !important;
-}}
+input, textarea {{ color: white !important; -webkit-text-fill-color: white !important; }}
+ul[data-baseweb="menu"] li {{ background-color: #4A3728 !important; color: white !important; }}
 
 ::placeholder {{ color: #D7CCC8 !important; opacity: 0.7; }}
 [data-testid="stSidebar"] {{ display: none; }}
@@ -100,8 +97,11 @@ details_options_mail = ""
 # --- PARTIE 1 : BOUQUET ---
 if choix == "🌹 Un Bouquet":
     st.header("🌹 Mon Bouquet")
-    taille = st.selectbox("Nombre de roses", list(PRIX_ROSES.keys()), format_func=lambda x: f"{x} Roses")
+    
+    # MODIF 1 : Curseur (Slider) pour le nombre de roses -> Zéro clavier
+    taille = st.select_slider("Nombre de roses", options=list(PRIX_ROSES.keys()), format_func=lambda x: f"{x} Roses")
     prix_base = PRIX_ROSES[taille]
+    
     try: st.image(f"bouquet_{taille}.jpg", use_container_width=True)
     except: st.caption("📷 (Image)")
     
@@ -109,7 +109,13 @@ if choix == "🌹 Un Bouquet":
     choix_emballage = st.selectbox("Style d'emballage", ["Noir", "Blanc", "Rose", "Rouge", "Bordeaux", "Bleu", "Dior (+5€)", "Chanel (+5€)"])
     prix_papier = 5 if "(+5€)" in str(choix_emballage) else 0
     
-    options_choisies = st.multiselect("Options :", list(ACCESSOIRES_BOUQUET.keys()))
+    # MODIF 2 : Cases à cocher dans un menu déroulant -> Zéro clavier
+    options_choisies = []
+    with st.expander("➕ Ajouter des options (Cliquer ici)"):
+        for opt in ACCESSOIRES_BOUQUET.keys():
+            if st.checkbox(opt):
+                options_choisies.append(opt)
+    
     prix_total = prix_base + prix_papier + sum(ACCESSOIRES_BOUQUET[o] for o in options_choisies)
     
     details_produit_mail = f"BOUQUET : {taille} roses\n- Couleur : {couleur_rose}\n- Emballage : {choix_emballage}"
@@ -157,7 +163,6 @@ adresse_complete = ""
 if mode_livraison != "📍 Retrait Gonesse":
     rue = st.text_input("Adresse (Rue, Ville, CP)")
     adresse_complete = f"{rue}"
-    # Correction : Le pays s'affiche si 'Hors France' est sélectionné
     if "Hors France" in mode_livraison:
         pays = st.text_input("🌍 Pays de destination")
         adresse_complete += f" | PAYS : {pays}"
