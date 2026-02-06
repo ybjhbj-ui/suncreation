@@ -1,5 +1,5 @@
 import streamlit as st
-from datetime import date, timedelta
+from datetime import date
 from urllib.parse import quote
 
 # --- 1. CONFIGURATION ---
@@ -22,22 +22,7 @@ elif aujourdhui.month == 12:
 # ==========================================
 # 🎨 DESIGN LUXE + AFFICHAGE HAUT (MOBILE)
 # ==========================================
-css_hearts = ""
-if EFFET_SPECIAL == "hearts":
-    css_hearts = """
-    <div class="hearts-container">
-        <div class="heart">❤️</div><div class="heart">💖</div><div class="heart">❤️</div>
-    </div>
-    <style>
-    .hearts-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
-    .heart { position: absolute; top: -10%; font-size: 20px; animation: heartRain 10s linear infinite; opacity: 0; }
-    .heart:nth-child(1) { left: 10%; animation-delay: 0s; } .heart:nth-child(2) { left: 50%; animation-delay: 4s; } .heart:nth-child(3) { left: 85%; animation-delay: 8s; }
-    @keyframes heartRain { 0% { opacity: 0; } 10% { opacity: 0.5; } 100% { transform: translateY(110vh); opacity: 0; } }
-    </style>
-    """
-
 st.markdown(f"""
-{css_hearts}
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Montserrat:wght@300;400;600&display=swap');
 header, [data-testid="stHeader"], footer, [data-testid="stFooter"], #MainMenu {{ display: none !important; }}
@@ -62,10 +47,14 @@ button[kind="primary"], .stButton > button {{
 
 if EFFET_SPECIAL == "snow": st.snow()
 
-# --- ⚙️ SECRETS ---
-MDP_DE_SECOURS = "SunCreation-Ultra-Secure-2026-!!#"
-SECRET_PASSWORD = st.secrets.get("ADMIN_PASSWORD", MDP_DE_SECOURS)
+# --- ⚙️ SECRETS & TÉLÉCOMMANDE ---
 EMAIL_PRO = st.secrets.get("EMAIL_RECEPTION", "sncreat24@gmail.com")
+# SI TU METS "OUI" DANS TES SECRETS, LE SITE SE FERME POUR TOUT LE MONDE
+ETAT_VACANCES_GLOBAL = st.secrets.get("MODE_VACANCES", "NON") 
+
+if ETAT_VACANCES_GLOBAL == "OUI":
+    st.error("🏖️ **FERMETURE EXCEPTIONNELLE**\n\nSun Creation prend quelques jours de repos. À très bientôt !")
+    st.stop()
 
 def creer_lien_email(sujet, corps): return f"mailto:{EMAIL_PRO}?subject={quote(sujet)}&body={quote(corps)}"
 
@@ -74,6 +63,7 @@ PRIX_BOX_FIXE = {"❤️ Box Love (I ❤️ U)": 50}
 PRIX_BOX_CHOCO = {"20cm": 53, "30cm": 70}
 PRIX_ROSES = {7: 20, 10: 25, 15: 30, 20: 35, 25: 40, 30: 45, 35: 50, 40: 55, 45: 60, 50: 65, 55: 70, 60: 75, 65: 80, 70: 90, 75: 95, 80: 100, 85: 105, 90: 110, 95: 115, 100: 120}
 
+# Uniquement tes 7 couleurs
 COULEURS_ROSES = ["Noir 🖤", "Blanc 🤍", "Rouge ❤️", "Rose 🌸", "Bleu Clair ❄️", "Bleu Foncé 🦋", "Violet 💜"]
 
 ACCESSOIRES_BOUQUET = {"🎗️ Bande avec un prénom (+15€)": 15, "💌 Carte + Enveloppe (+5€)": 5, "🦋 Papillon (+2€)": 2, "🎀 Noeud Papillon (+2€)": 2, "✨ Diamants (+2€)": 2, "🏷️ Sticker (+10€)": 10, "👑 Couronne (+10€)": 10, "🧸 Peluche (+3€)": 3, "📸 Photo (+5€)": 5, "💡 LED (+5€)": 5, "🍫 Ferrero (+1€)": 1, "🅰️ Initiale (+3€)": 3}
@@ -89,25 +79,9 @@ with col_logo:
     except: st.write("🌹")
 with col_titre:
     st.title("Sun Creation")
-    if THEME['nom'] != "Standard":
-        st.markdown(f"<p style='color:{THEME['main_color']};font-weight:bold; margin-top:-20px;'>✨ {THEME['nom']}</p>", unsafe_allow_html=True)
 
 choix = st.radio("Je souhaite commander :", ["🌹 Un Bouquet", "🍫 Box Chocolat", "❤️ Box Love (I ❤️ U)"])
 st.markdown("---")
-
-params = st.query_params
-en_vacances = False
-if params.get("admin") == "oui":
-    with st.expander("⚙️ Configuration Secrète"):
-        input_pwd = st.text_input("Code de sécurité", type="password")
-        if input_pwd == SECRET_PASSWORD: 
-            st.success("Accès Direction")
-            en_vacances = st.checkbox("🔴 Activer Mode Vacances")
-        elif input_pwd: st.error("Code erroné")
-
-if en_vacances:
-    st.error("🏖️ **FERMETURE EXCEPTIONNELLE**")
-    st.stop()
 
 details_produit_mail = ""
 details_options_mail = ""
@@ -122,12 +96,10 @@ if choix == "🌹 Un Bouquet":
     with col2:
         try: st.image(f"bouquet_{taille}.jpg", use_container_width=True)
         except: st.caption("📷 (Image)")
-    
     couleur_rose = st.selectbox("Couleur des roses", COULEURS_ROSES)
     choix_emballage = st.selectbox("Style d'emballage", ["Noir", "Blanc", "Rose", "Rouge", "Bordeaux", "Vert", "Bleu", "Crème", "Dior Noir (+5€)", "Dior Rose (+5€)", "Chanel (+5€)", "LV (+5€)"])
     prix_papier = 5 if "(+5€)" in choix_emballage else 0
     options_choisies = st.multiselect("Ajouter des éléments :", list(ACCESSOIRES_BOUQUET.keys()))
-    
     details_sup = ""
     if "🎗️ Bande avec un prénom (+15€)" in options_choisies:
         txt = st.text_input("📝 Prénom pour la bande :")
@@ -138,7 +110,6 @@ if choix == "🌹 Un Bouquet":
     if "🅰️ Initiale (+3€)" in options_choisies:
         txt = st.text_input("📝 Quelle initiale ?")
         details_sup += f"\n   -> Initiale : {txt}"
-    
     prix_total = prix_base + prix_papier + sum(ACCESSOIRES_BOUQUET[o] for o in options_choisies)
     details_produit_mail = f"BOUQUET : {taille} roses\n- Couleur : {couleur_rose}\n- Emballage : {choix_emballage}"
     details_options_mail = ", ".join(options_choisies) + details_sup
@@ -153,14 +124,10 @@ elif choix == "🍫 Box Chocolat":
     with col2:
         try: st.image(f"box_{taille_box.lower()}.jpg", use_container_width=True)
         except: st.caption("📷 (Image)")
-    
+    # "Mixte" supprimé ici
     liste_chocolats = st.multiselect("Choisissez les chocolats :", ["Kinder Bueno", "Ferrero Rocher", "Milka", "Raffaello", "Schoko-Bons"])
-    
     fleur_eternelle = st.checkbox("Ajouter des Roses Éternelles ?")
-    couleur_fleur_info = ""
-    if fleur_eternelle:
-        couleur_fleur_info = st.selectbox("Couleur des roses éternelles :", COULEURS_ROSES)
-        
+    couleur_fleur_info = st.selectbox("Couleur des roses :", COULEURS_ROSES) if fleur_eternelle else ""
     options_choisies = st.multiselect("Ajouter des options :", list(ACCESSOIRES_BOX_CHOCO.keys()))
     details_sup = ""
     if "🅰️ Initiale (+5€)" in options_choisies:
@@ -201,11 +168,9 @@ if mode_livraison != "📍 Retrait Gonesse":
         rue = st.text_input("Adresse (Rue, Ville, CP)")
         adresse_complete = f"{rue}"
 
-# MODIFICATION : Tél demandé à tout le monde pour le mail
 nom = st.text_input("Votre Nom & Prénom")
-tel = st.text_input("Téléphone")
+tel = st.text_input("📞 Téléphone (Indispensable)")
 inst = st.text_input("Votre Instagram")
-st.warning("💳 **Acompte 40% requis**")
 
 total_final = prix_total + frais_port
 acompte = total_final * 0.40
@@ -214,38 +179,37 @@ st.markdown(f"""
 <div style="background-color:white; padding:20px; border-radius:15px; text-align:center; border: 1px solid #E7D8D0;">
     <h3 style="margin:0; color:{THEME['text_color']};">Total : {total_final} €</h3>
     <div style="background-color:{THEME['main_color']}; color:white; padding:10px 20px; border-radius:50px; margin-top:10px; font-weight:bold;">
-        🔒 Acompte : {acompte:.2f} €
+        🔒 Acompte requis : {acompte:.2f} €
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 if st.button("✅ VALIDER MA COMMANDE", type="primary", use_container_width=True):
     if nom and inst and tel:
-        # MISE À JOUR : Mail "Beau à voir" avec Acompte et Téléphone
         msg = f"""✨ NOUVELLE COMMANDE SUN CREATION ✨
 __________________________________
 
-👤 CLIENT
+👤 INFOS CLIENT
 • Nom : {nom}
-• Insta : {inst}
+• Instagram : {inst}
 • Tél : {tel}
 
-📦 DÉTAILS
+📦 COMMANDE
 • Produit : {choix}
-{details_produit_mail.replace(chr(10), chr(10))}
+{details_produit_mail}
 
-➕ OPTIONS
-{details_options_mail}
+➕ OPTIONS & PERSONNALISATION
+{details_options_mail if details_options_mail else "Aucune option."}
 
 🚚 RÉCEPTION
 • Mode : {mode_livraison}
-• Adresse : {adresse_complete if adresse_complete else 'Retrait Gonesse'}
+• Adresse : {adresse_complete if adresse_complete else 'Retrait place (Gonesse)'}
 
 💰 PAIEMENT
-• TOTAL : {total_final} €
-• 🔒 ACOMPTE (40%) : {acompte:.2f} €
+• TOTAL À RÉGLER : {total_final} €
+• 🔒 ACOMPTE À VERSER (40%) : {acompte:.2f} €
 __________________________________"""
         st.balloons()
         st.markdown(f'<a href="{creer_lien_email(f"Commande {nom}", msg)}" style="background-color:{THEME["main_color"]}; color:white; padding:15px; display:block; text-align:center; border-radius:50px; font-weight:bold; text-decoration:none;">📨 ENVOYER LA COMMANDE</a>', unsafe_allow_html=True)
     else:
-        st.error("Merci de remplir Nom, Téléphone et Instagram.")
+        st.error("Merci de remplir Nom, Téléphone et Instagram pour valider.")
