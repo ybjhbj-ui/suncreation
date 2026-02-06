@@ -20,7 +20,7 @@ elif aujourdhui.month == 12:
     EFFET_SPECIAL = "snow"
 
 # ==========================================
-# 🎨 DESIGN LUXE + VISIBILITÉ FORCÉE
+# 🎨 DESIGN LUXE + VISIBILITÉ TOTALE (FORCÉE)
 # ==========================================
 css_hearts = ""
 if EFFET_SPECIAL == "hearts":
@@ -39,7 +39,7 @@ if EFFET_SPECIAL == "hearts":
 st.markdown(f"""
 {css_hearts}
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Montserrat:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Montserrat:wght@400;700;800&display=swap');
 header, [data-testid="stHeader"], footer, [data-testid="stFooter"], #MainMenu {{ display: none !important; }}
 .stApp {{ background-color: {THEME['bg_color']} !important; }}
 
@@ -53,30 +53,26 @@ header, [data-testid="stHeader"], footer, [data-testid="stFooter"], #MainMenu {{
 }}
 
 /* --- FORCE LA VISIBILITÉ DES BOUTONS (PILLS) --- */
+/* État normal (Non cliqué) : Fond Blanc + Texte Noir/Marron */
 [data-testid="stPills"] button {{
-    background-color: #2D1E12 !important;
+    background-color: #FFFFFF !important;
     border: 2px solid #D4AF37 !important;
     padding: 10px 15px !important;
-    min-height: 45px !important;
+    transition: all 0.2s ease-in-out;
 }}
 
-/* Force le texte en Blanc pur et Gras pour Sun Creation */
 [data-testid="stPills"] button p {{
-    color: #FFFFFF !important;
-    -webkit-text-fill-color: #FFFFFF !important;
+    color: #2D1E12 !important; /* Marron Noir très lisible */
+    -webkit-text-fill-color: #2D1E12 !important;
     font-weight: 800 !important;
     font-size: 1.1rem !important;
-    opacity: 1 !important;
 }}
 
-/* Style quand un bouton est sélectionné */
+/* État Sélectionné (Cliqué) : Fond Rose Poudré + Bordure Or */
 [data-testid="stPills"] button[aria-checked="true"] {{
-    background-color: #D4AF37 !important;
-    border-color: #FFFFFF !important;
-}}
-[data-testid="stPills"] button[aria-checked="true"] p {{
-    color: #2D1E12 !important;
-    -webkit-text-fill-color: #2D1E12 !important;
+    background-color: #FFF0F5 !important;
+    border: 3px solid #D4AF37 !important;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.4) !important;
 }}
 
 h1, h2, h3 {{ font-family: 'Playfair Display', serif !important; color: {THEME['text_color']} !important; }}
@@ -84,24 +80,20 @@ h1, h2, h3 {{ font-family: 'Playfair Display', serif !important; color: {THEME['
     font-family: 'Montserrat', sans-serif !important; color: #2D1E12 !important; font-weight: 700 !important;
 }}
 
+/* Champs de saisie reste marron pour le contraste du texte blanc */
 div[data-baseweb="input"] > div, textarea {{
     background-color: #4A3728 !important; border: 1px solid #D4AF37 !important; border-radius: 8px !important;
 }}
-
-input, textarea {{
-    color: white !important; -webkit-text-fill-color: white !important; caret-color: white !important;
-}}
+input, textarea {{ color: white !important; -webkit-text-fill-color: white !important; }}
 ::placeholder {{ color: #D7CCC8 !important; opacity: 0.7; }}
-[data-testid="stSidebar"] {{ display: none; }}
+
 button[kind="primary"], .stButton > button {{
     background-color: {THEME['main_color']} !important; color: white !important; border-radius: 50px !important; font-weight: bold !important;
 }}
 </style>
 """, unsafe_allow_html=True)
 
-if EFFET_SPECIAL == "snow": st.snow()
-
-# --- ⚙️ SECRETS & TÉLÉCOMMANDE ---
+# --- ⚙️ SECRETS ---
 EMAIL_PRO = st.secrets.get("EMAIL_RECEPTION", "sncreat24@gmail.com")
 ETAT_VACANCES_GLOBAL = st.secrets.get("MODE_VACANCES", "NON") 
 
@@ -120,9 +112,7 @@ ACCESSOIRES_BOUQUET = {"🎗️ Bande (+15€)": 15, "💌 Carte (+5€)": 5, "�
 ACCESSOIRES_BOX_CHOCO = {"🅰️ Initiale (+5€)": 5, "🧸 Doudou (+3.50€)": 3.5, "🎗️ Bande (+10€)": 10, "🎂 Topper (+2€)": 2}
 LIVRAISON_OPTIONS = {"📍 Retrait Gonesse": 0, "📦 Colis IDF - 12€": 12, "📦 Colis France - 12€": 12, "🌍 Hors France - 15€": 15, "🚗 Uber (À CHARGE)": 0}
 
-# =========================================================
-# 🏠 EN-TÊTE
-# =========================================================
+# --- HEADER ---
 st.markdown('<p class="main-title">Sun Creation</p>', unsafe_allow_html=True)
 col_logo_l, col_logo_c, col_logo_r = st.columns([1, 1.5, 1])
 with col_logo_c:
@@ -147,7 +137,7 @@ if choix == "🌹 Un Bouquet":
     couleur_rose = st.pills("Couleur des roses", COULEURS_ROSES, selection_mode="single")
     choix_emballage = st.pills("Style d'emballage", ["Noir", "Blanc", "Rose", "Rouge", "Bordeaux", "Bleu", "Dior (+5€)", "Chanel (+5€)"], selection_mode="single")
     prix_papier = 5 if "(+5€)" in str(choix_emballage) else 0
-    options_choisies = st.pills("Ajouter des éléments :", list(ACCESSOIRES_BOUQUET.keys()), selection_mode="multi")
+    options_choisies = st.pills("Options :", list(ACCESSOIRES_BOUQUET.keys()), selection_mode="multi")
     if not options_choisies: options_choisies = []
     prix_total = prix_base + prix_papier + sum(ACCESSOIRES_BOUQUET[o] for o in options_choisies)
     details_produit_mail = f"BOUQUET : {taille} roses\n- Couleur : {couleur_rose}\n- Emballage : {choix_emballage}"
@@ -156,7 +146,7 @@ if choix == "🌹 Un Bouquet":
 # --- PARTIE 2 : BOX CHOCOLAT ---
 elif choix == "🍫 Box Chocolat":
     st.header("🍫 Ma Box Chocolat")
-    taille_box = st.pills("Quelle taille ?", list(PRIX_BOX_CHOCO.keys()), format_func=lambda x: f"Taille {x}", selection_mode="single")
+    taille_box = st.pills("Taille :", list(PRIX_BOX_CHOCO.keys()), selection_mode="single")
     if not taille_box: taille_box = "20cm"
     prix_base = PRIX_BOX_CHOCO[taille_box]
     try: st.image(f"box_{taille_box.lower()}.jpg", use_container_width=True)
@@ -176,14 +166,14 @@ else:
     try: st.image("box_love.jpg", use_container_width=True)
     except: pass
     couleur_love = st.pills("Couleur des fleurs", COULEURS_ROSES, selection_mode="single")
-    liste_chocolats = st.pills("Quels chocolats ?", ["Kinder Bueno", "Ferrero Rocher"], selection_mode="multi")
+    liste_chocolats = st.pills("Chocolats :", ["Kinder Bueno", "Ferrero Rocher"], selection_mode="multi")
     prix_total = PRIX_BOX_FIXE[choix]
     details_produit_mail = f"BOX LOVE\n- Fleurs : {couleur_love}\n- Chocolats : {liste_chocolats}"
     details_options_mail = "Standard"
 
-# --- LIVRAISON ---
+# --- LIVRAISON & INFOS ---
 st.markdown("---")
-st.subheader("🚚 Livraison")
+st.subheader("🚚 Livraison & Client")
 mode_livraison = st.selectbox("Mode de réception", list(LIVRAISON_OPTIONS.keys()))
 frais_port = LIVRAISON_OPTIONS[mode_livraison]
 
@@ -210,7 +200,16 @@ st.markdown(f"""
 
 if st.button("✅ VALIDER MA COMMANDE", type="primary", use_container_width=True):
     if nom and inst and tel:
-        msg = f"COMMANDE SUN CREATION\nClient: {nom}\nTel: {tel}\nInsta: {inst}\nProduit: {choix}\nInfos: {details_produit_mail}\nTotal: {total_final}€"
+        msg = f"""✨ NOUVELLE COMMANDE SUN CREATION ✨
+👤 CLIENT : {nom}
+📱 TEL : {tel}
+📸 INSTA : {inst}
+📦 PRODUIT : {choix}
+{details_produit_mail}
+➕ OPTIONS : {details_options_mail}
+🚚 LIVRAISON : {mode_livraison} ({adresse_complete})
+💰 TOTAL : {total_final}€
+🔒 ACOMPTE (40%) : {acompte:.2f}€"""
         st.markdown(f'<a href="{creer_lien_email(f"Commande {nom}", msg)}" style="background-color:{THEME["main_color"]}; color:white; padding:15px; display:block; text-align:center; border-radius:50px; font-weight:bold; text-decoration:none;">📨 ENVOYER LA COMMANDE</a>', unsafe_allow_html=True)
     else:
         st.error("Merci de remplir Nom, Téléphone et Instagram pour valider.")
