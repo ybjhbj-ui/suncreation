@@ -1,5 +1,5 @@
 import streamlit as st
-from datetime import date
+from datetime import date, timedelta
 from urllib.parse import quote
 
 # --- 1. CONFIGURATION ---
@@ -24,7 +24,7 @@ elif aujourdhui.month == 12:
     EFFET_SPECIAL = "snow"
 
 # ==========================================
-# 🎨 DESIGN LUXE (TON PRÉFÉRÉ)
+# 🎨 DESIGN LUXE
 # ==========================================
 css_hearts = ""
 if EFFET_SPECIAL == "hearts":
@@ -62,7 +62,8 @@ h1, h2, h3 {{ font-family: 'Playfair Display', serif !important; color: {THEME['
 }}
 
 /* VISIBILITÉ MENUS DÉROULANTS & CHAMPS */
-div[data-baseweb="select"] > div, div[data-baseweb="input"] > div, .stDateInput div, textarea {{
+/* Correction ici : suppression de .stDateInput div pour ne pas colorer le fond du texte */
+div[data-baseweb="select"] > div, div[data-baseweb="input"] > div, textarea {{
     background-color: #4A3728 !important; border: 1px solid #D4AF37 !important; color: white !important;
 }}
 div[data-baseweb="select"] span {{ color: white !important; font-weight: 600 !important; }}
@@ -94,7 +95,7 @@ if ETAT_VACANCES_GLOBAL == "OUI":
 def creer_lien_email(sujet, corps): return f"mailto:{EMAIL_PRO}?subject={quote(sujet)}&body={quote(corps)}"
 
 # --- DONNÉES ---
-PRIX_BOX_LOVE_FIXE = 70  # CORRECTION PRIX DEMANDÉE
+PRIX_BOX_LOVE_FIXE = 70 
 PRIX_BOX_CHOCO = {"20cm": 53, "30cm": 70}
 PRIX_ROSES = {7: 20, 10: 25, 15: 30, 20: 35, 25: 40, 30: 45, 35: 50, 40: 55, 45: 60, 50: 65, 55: 70, 60: 75, 65: 80, 70: 90, 75: 95, 80: 100, 85: 105, 90: 110, 95: 115, 100: 120}
 COULEURS_ROSES = ["Noir 🖤", "Blanc 🤍", "Rouge ❤️", "Rose 🌸", "Bleu Clair ❄️", "Bleu Foncé 🦋", "Violet 💜"]
@@ -125,14 +126,11 @@ if choix == "🌹 Un Bouquet":
     taille = st.select_slider("Nombre de roses", options=list(PRIX_ROSES.keys()), format_func=lambda x: f"{x} Roses ({PRIX_ROSES[x]}€)")
     prix_base = PRIX_ROSES[taille]
     st.markdown(f"<h4 style='text-align:center; color:{THEME['main_color']}; margin-top:-10px;'>Prix de base : {prix_base} €</h4>", unsafe_allow_html=True)
-    
     try: st.image(f"bouquet_{taille}.jpg", use_container_width=True)
     except: st.caption("📷 (Image)")
-    
     couleur_rose = st.selectbox("Couleur des roses", COULEURS_ROSES)
     choix_emballage = st.selectbox("Style d'emballage", ["Noir", "Blanc", "Rose", "Rouge", "Bordeaux", "Bleu", "Dior (+5€)", "Chanel (+5€)"])
     prix_papier = 5 if "(+5€)" in str(choix_emballage) else 0
-    
     st.write("**Ajouter des options :**")
     options_choisies = []
     details_sup_list = []
@@ -150,7 +148,6 @@ if choix == "🌹 Un Bouquet":
                 if val: details_sup_list.append(f"Initiale: {val}")
 
     prix_article = prix_base + prix_papier + sum(ACCESSOIRES_BOUQUET[o] for o in options_choisies)
-    
     if st.button(f"➕ AJOUTER AU PANIER ({prix_article}€)", type="primary", use_container_width=True):
         info_options = ", ".join(options_choisies)
         if details_sup_list: info_options += " | " + " | ".join(details_sup_list)
@@ -168,12 +165,9 @@ elif choix == "🍫 Box Chocolat":
     prix_base = PRIX_BOX_CHOCO[taille_box]
     try: st.image(f"box_{taille_box.lower()}.jpg", use_container_width=True)
     except: st.caption("📷 (Image)")
-    
     liste_chocolats = st.multiselect("Chocolats :", ["Kinder Bueno", "Ferrero Rocher", "Milka", "Raffaello", "Schoko-Bons"])
-    
     fleur_eternelle = st.checkbox("Ajouter des Roses Éternelles ?")
     couleur_fleur_info = st.selectbox("Couleur roses :", COULEURS_ROSES) if fleur_eternelle else "Aucune"
-    
     options_choisies = []
     details_sup_list = []
     st.write("**Options :**")
@@ -188,7 +182,6 @@ elif choix == "🍫 Box Chocolat":
                 if val: details_sup_list.append(f"Bande: {val}")
 
     prix_article = prix_base + sum(ACCESSOIRES_BOX_CHOCO[o] for o in options_choisies)
-    
     if st.button(f"➕ AJOUTER AU PANIER ({prix_article}€)", type="primary", use_container_width=True):
         info_options = ", ".join(options_choisies)
         if details_sup_list: info_options += " | " + " | ".join(details_sup_list)
@@ -204,12 +197,9 @@ else:
     st.header("❤️ Configurer Box Love")
     try: st.image("box_love.jpg", use_container_width=True)
     except: pass
-    
     couleur_love = st.selectbox("Couleur des fleurs", COULEURS_ROSES)
     liste_chocolats = st.multiselect("Chocolats :", ["Kinder Bueno", "Ferrero Rocher"])
-    
     prix_article = PRIX_BOX_LOVE_FIXE
-    
     if st.button(f"➕ AJOUTER AU PANIER ({prix_article}€)", type="primary", use_container_width=True):
         st.session_state.panier.append({
             "titre": "BOX LOVE (I ❤️ U)",
@@ -247,15 +237,12 @@ else:
 
     # --- LIVRAISON ET FORMULAIRE FINAL ---
     st.subheader("🚚 Livraison & Paiement")
-    
     # Choix livraison
     mode_livraison = st.selectbox("Mode de réception", list(LIVRAISON_OPTIONS.keys()))
     frais_port = LIVRAISON_OPTIONS[mode_livraison]
-    
     # Calculs Finaux
     total_final = total_articles + frais_port
     acompte = total_final * 0.40
-    
     st.markdown(f"""
     <div style="background-color:white; padding:20px; border-radius:15px; text-align:center; border: 2px solid {THEME['main_color']}; margin-bottom: 20px;">
         <h3 style="margin:0; color:{THEME['text_color']};">TOTAL À RÉGLER : {total_final} €</h3>
@@ -266,11 +253,14 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
-    # --- FORMULAIRE FINAL (Résout le souci "Entrée") ---
+    # --- FORMULAIRE FINAL ---
     with st.form("checkout_form"):
-        st.write("**👤 Vos Coordonnées**")
+        # Date de livraison (Délai 7 jours)
+        st.write("**📅 Date de livraison souhaitée**")
+        min_date = date.today() + timedelta(days=7)
+        date_livraison = st.date_input("Choisir une date (Délai min. 7 jours)", min_value=min_date)
         
-        # Logique Pays restaurée DANS le formulaire
+        st.write("**👤 Vos Coordonnées**")
         adresse_finale = "Retrait sur place"
         if mode_livraison != "📍 Retrait Gonesse":
             rue = st.text_input("📍 Adresse complète (Rue, Ville, CP)")
@@ -279,7 +269,6 @@ else:
                 adresse_finale = f"{rue} | PAYS : {pays}"
             else:
                 adresse_finale = rue
-        
         nom = st.text_input("Votre Nom & Prénom")
         tel = st.text_input("📞 Téléphone (Indispensable)")
         inst = st.text_input("Votre Instagram")
@@ -288,7 +277,6 @@ else:
     
     if submitted:
         if nom and tel and inst:
-            # Construction du mail Propre
             lignes_articles = "\n".join([f"• {it['titre']} ({it['prix']}€)\n  {it['desc']}" for it in st.session_state.panier])
             
             msg = f"""✨ NOUVELLE COMMANDE SUN CREATION ✨
@@ -303,6 +291,7 @@ else:
 --------------------------------
 🚚 LIVRAISON
 • Mode : {mode_livraison}
+• Date souhaitée : {date_livraison}
 • Adresse : {adresse_finale}
 --------------------------------
 💰 PAIEMENT
