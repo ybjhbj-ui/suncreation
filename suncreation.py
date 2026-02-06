@@ -12,6 +12,7 @@ aujourdhui = date.today()
 THEME = {"nom": "Standard", "bg_color": "#FDF8F5", "main_color": "#D4AF37", "text_color": "#5D4037", "icon": "🌹"}
 EFFET_SPECIAL = None
 
+# SÉLECTION AUTOMATIQUE DE LA SAISON (Ex: Février 2026)
 if aujourdhui.month == 2 and 1 <= aujourdhui.day <= 15:
     THEME = {"nom": "Saint-Valentin", "bg_color": "#FFF0F5", "main_color": "#E91E63", "text_color": "#880E4F", "icon": "💖"}
     EFFET_SPECIAL = "hearts"
@@ -62,11 +63,10 @@ button[kind="primary"], .stButton > button {{
 
 if EFFET_SPECIAL == "snow": st.snow()
 
-# --- ⚙️ RÉCUPÉRATION DES SECRETS (SÉCURISÉ) ---
-# Si le secret n'existe pas, on met une valeur par défaut pour éviter que le site plante
+# --- ⚙️ SECRETS ---
 MDP_DE_SECOURS = "SunCreation-Ultra-Secure-2026-!!#"
 SECRET_PASSWORD = st.secrets.get("ADMIN_PASSWORD", MDP_DE_SECOURS)
-EMAIL_PRO = st.secrets.get("EMAIL_RECEPTION", "sncreat24@gmail.com") # <- SÉCURISÉ ICI
+EMAIL_PRO = st.secrets.get("EMAIL_RECEPTION", "sncreat24@gmail.com")
 
 def creer_lien_email(sujet, corps): return f"mailto:{EMAIL_PRO}?subject={quote(sujet)}&body={quote(corps)}"
 
@@ -79,7 +79,7 @@ ACCESSOIRES_BOUQUET = {"🎗️ Bande avec un prénom (+15€)": 15, "💌 Carte
 ACCESSOIRES_BOX_CHOCO = {"🅰️ Initiale (+5€)": 5, "🧸 Doudou (+3.50€)": 3.5, "🧸🧸 2 Doudous (+7€)": 7, "🎗️ Bande personnalisée (+10€)": 10, "🎂 Topper (+2€)": 2}
 LIVRAISON_OPTIONS = {"📍 Retrait Gonesse": 0, "📦 Colis IDF - 12€": 12, "📦 Colis France - 12€": 12, "🌍 Hors France - 15€": 15, "🚗 Uber / Chauffeur (À VOTRE CHARGE)": 0}
 
-# --- SIDEBAR + ADMIN INVISIBLE ---
+# --- SIDEBAR + ADMIN ---
 with st.sidebar:
     try: st.image("logo.jpg", width=250)
     except: st.write("🌹 **Sun Creation**")
@@ -88,7 +88,6 @@ with st.sidebar:
     choix = st.radio("Je souhaite commander :", ["🌹 Un Bouquet", "🍫 Box Chocolat", "❤️ Box Love (I ❤️ U)"])
     st.markdown("---")
     
-    # --- LOGIQUE ADMIN FANTÔME ---
     params = st.query_params
     en_vacances = False
     if params.get("admin") == "oui":
@@ -98,10 +97,8 @@ with st.sidebar:
                 st.success("Accès Direction")
                 en_vacances = st.checkbox("🔴 Activer Mode Vacances")
             elif input_pwd: st.error("Code erroné")
-    
     st.warning("💳 **Acompte 40% requis**")
 
-# --- BLOQUAGE VACANCES ---
 if en_vacances:
     st.error("🏖️ **FERMETURE EXCEPTIONNELLE**")
     st.stop()
@@ -168,7 +165,7 @@ elif choix == "🍫 Box Chocolat":
 
 # --- PARTIE 3 : BOX LOVE ---
 else:
-    st.title("❤️ Box Love")
+    st.title("❤️ Box Love Signature")
     try: st.image("box_love.jpg", use_container_width=True)
     except: pass
     couleur_love = st.selectbox("Couleur des fleurs", COULEURS_ROSES)
@@ -179,13 +176,21 @@ else:
 
 # --- LIVRAISON ---
 st.markdown("---")
+st.subheader("🚚 Livraison")
 mode_livraison = st.selectbox("Mode de réception", list(LIVRAISON_OPTIONS.keys()))
 frais_port = LIVRAISON_OPTIONS[mode_livraison]
+
 adresse_complete = ""
 if mode_livraison != "📍 Retrait Gonesse":
-    rue = st.text_input("Adresse (Rue, Ville, CP)")
-    tel = st.text_input("Téléphone")
-    adresse_complete = f"{rue} | Tél: {tel}"
+    if "Hors France" in mode_livraison:
+        pays = st.text_input("🌍 Pays de destination")
+        rue = st.text_input("Adresse (Rue, Ville, CP)")
+        tel = st.text_input("Téléphone")
+        adresse_complete = f"{rue} | PAYS : {pays} | Tél: {tel}"
+    else:
+        rue = st.text_input("Adresse (Rue, Ville, CP)")
+        tel = st.text_input("Téléphone")
+        adresse_complete = f"{rue} | Tél: {tel}"
 
 nom = st.text_input("Votre Nom & Prénom")
 inst = st.text_input("Votre Instagram")
@@ -203,6 +208,6 @@ st.markdown(f"""
 
 if st.button("✅ VALIDER MA COMMANDE", type="primary", use_container_width=True):
     if nom and inst:
-        msg = f"COMMANDE SUN CREATION 🌹\nClient : {nom} ({inst})\nAdresse : {adresse_complete if adresse_complete else 'Retrait place'}\nProduit : {choix}\nDétails :\n{details_produit_mail}\nOptions :\n{details_options_mail}\nTotal : {total_final}€ | Acompte : {acompte:.2f}€"
+        msg = f"COMMANDE SUN CREATION 🌹\nClient : {nom} ({inst})\nAdresse : {adresse_complete if adresse_complete else 'Retrait place'}\nProduit : {choix}\nDétails :\n{details_produit_mail}\nOptions :\n{details_options_mail}\nTotal : {total_final}€"
         st.balloons()
         st.markdown(f'<a href="{creer_lien_email(f"Commande {nom}", msg)}" style="background-color:{THEME["main_color"]}; color:white; padding:15px; display:block; text-align:center; border-radius:50px; font-weight:bold; text-decoration:none;">📨 ENVOYER LA COMMANDE</a>', unsafe_allow_html=True)
