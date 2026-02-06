@@ -20,26 +20,11 @@ elif aujourdhui.month == 12:
     EFFET_SPECIAL = "snow"
 
 # ==========================================
-# 🎨 DESIGN LUXE + VISIBILITÉ TOTALE (FORCÉE)
+# 🎨 DESIGN LUXE + ÉCRITURE DORÉE
 # ==========================================
-css_hearts = ""
-if EFFET_SPECIAL == "hearts":
-    css_hearts = """
-    <div class="hearts-container">
-        <div class="heart">❤️</div><div class="heart">💖</div><div class="heart">❤️</div>
-    </div>
-    <style>
-    .hearts-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
-    .heart { position: absolute; top: -10%; font-size: 20px; animation: heartRain 10s linear infinite; opacity: 0; }
-    .heart:nth-child(1) { left: 10%; animation-delay: 0s; } .heart:nth-child(2) { left: 50%; animation-delay: 4s; } .heart:nth-child(3) { left: 85%; animation-delay: 8s; }
-    @keyframes heartRain { 0% { opacity: 0; } 10% { opacity: 0.5; } 100% { transform: translateY(110vh); opacity: 0; } }
-    </style>
-    """
-
 st.markdown(f"""
-{css_hearts}
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Montserrat:wght@400;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@800&family=Montserrat:wght@700;900&display=swap');
 header, [data-testid="stHeader"], footer, [data-testid="stFooter"], #MainMenu {{ display: none !important; }}
 .stApp {{ background-color: {THEME['bg_color']} !important; }}
 
@@ -49,43 +34,47 @@ header, [data-testid="stHeader"], footer, [data-testid="stFooter"], #MainMenu {{
     text-align: center;
     font-size: 3rem !important;
     font-weight: 800;
-    margin-bottom: 0px;
+    margin-bottom: 5px;
 }}
 
-/* --- FORCE LA VISIBILITÉ DES BOUTONS (PILLS) --- */
-/* État normal (Non cliqué) : Fond Blanc + Texte Noir/Marron */
-[data-testid="stPills"] button {{
-    background-color: #FFFFFF !important;
-    border: 2px solid #D4AF37 !important;
+/* --- STYLE DES BOUTONS DE CHOIX (PILLS) --- */
+div[data-testid="stPills"] button {{
+    background-color: #1A120B !important; /* Fond très sombre pour le luxe */
+    border: 1.5px solid #D4AF37 !important; /* Bordure dorée */
+    border-radius: 12px !important;
     padding: 10px 15px !important;
-    transition: all 0.2s ease-in-out;
 }}
 
-[data-testid="stPills"] button p {{
-    color: #2D1E12 !important; /* Marron Noir très lisible */
-    -webkit-text-fill-color: #2D1E12 !important;
+/* ÉCRITURE DORÉE : Force la couleur or sur le texte */
+div[data-testid="stPills"] button p {{
+    color: #D4AF37 !important; 
+    -webkit-text-fill-color: #D4AF37 !important;
     font-weight: 800 !important;
-    font-size: 1.1rem !important;
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 1.05rem !important;
+    opacity: 1 !important;
 }}
 
-/* État Sélectionné (Cliqué) : Fond Rose Poudré + Bordure Or */
-[data-testid="stPills"] button[aria-checked="true"] {{
-    background-color: #FFF0F5 !important;
-    border: 3px solid #D4AF37 !important;
-    box-shadow: 0 0 10px rgba(212, 175, 55, 0.4) !important;
+/* État quand on clique : Inversion pour bien voir la sélection */
+div[data-testid="stPills"] button[aria-checked="true"] {{
+    background-color: #D4AF37 !important;
+    border-color: #FFFFFF !important;
+}}
+div[data-testid="stPills"] button[aria-checked="true"] p {{
+    color: #1A120B !important;
+    -webkit-text-fill-color: #1A120B !important;
 }}
 
 h1, h2, h3 {{ font-family: 'Playfair Display', serif !important; color: {THEME['text_color']} !important; }}
 .stMarkdown, p, label {{
-    font-family: 'Montserrat', sans-serif !important; color: #2D1E12 !important; font-weight: 700 !important;
+    font-family: 'Montserrat', sans-serif !important; color: #2D1E12 !important; font-weight: 800 !important;
 }}
 
-/* Champs de saisie reste marron pour le contraste du texte blanc */
+/* Saisie texte (Nom, Tel...) */
 div[data-baseweb="input"] > div, textarea {{
     background-color: #4A3728 !important; border: 1px solid #D4AF37 !important; border-radius: 8px !important;
 }}
 input, textarea {{ color: white !important; -webkit-text-fill-color: white !important; }}
-::placeholder {{ color: #D7CCC8 !important; opacity: 0.7; }}
 
 button[kind="primary"], .stButton > button {{
     background-color: {THEME['main_color']} !important; color: white !important; border-radius: 50px !important; font-weight: bold !important;
@@ -98,7 +87,7 @@ EMAIL_PRO = st.secrets.get("EMAIL_RECEPTION", "sncreat24@gmail.com")
 ETAT_VACANCES_GLOBAL = st.secrets.get("MODE_VACANCES", "NON") 
 
 if ETAT_VACANCES_GLOBAL == "OUI":
-    st.error("🏖️ **FERMETURE EXCEPTIONNELLE**\n\nSun Creation prend quelques jours de repos. À très bientôt !")
+    st.error("🏖️ **FERMETURE EXCEPTIONNELLE**")
     st.stop()
 
 def creer_lien_email(sujet, corps): return f"mailto:{EMAIL_PRO}?subject={quote(sujet)}&body={quote(corps)}"
@@ -171,7 +160,7 @@ else:
     details_produit_mail = f"BOX LOVE\n- Fleurs : {couleur_love}\n- Chocolats : {liste_chocolats}"
     details_options_mail = "Standard"
 
-# --- LIVRAISON & INFOS ---
+# --- LIVRAISON ---
 st.markdown("---")
 st.subheader("🚚 Livraison & Client")
 mode_livraison = st.selectbox("Mode de réception", list(LIVRAISON_OPTIONS.keys()))
@@ -200,16 +189,7 @@ st.markdown(f"""
 
 if st.button("✅ VALIDER MA COMMANDE", type="primary", use_container_width=True):
     if nom and inst and tel:
-        msg = f"""✨ NOUVELLE COMMANDE SUN CREATION ✨
-👤 CLIENT : {nom}
-📱 TEL : {tel}
-📸 INSTA : {inst}
-📦 PRODUIT : {choix}
-{details_produit_mail}
-➕ OPTIONS : {details_options_mail}
-🚚 LIVRAISON : {mode_livraison} ({adresse_complete})
-💰 TOTAL : {total_final}€
-🔒 ACOMPTE (40%) : {acompte:.2f}€"""
+        msg = f"COMMANDE SUN CREATION\nClient: {nom}\nTel: {tel}\nInsta: {inst}\nProduit: {choix}\nInfos: {details_produit_mail}\nTotal: {total_final}€"
         st.markdown(f'<a href="{creer_lien_email(f"Commande {nom}", msg)}" style="background-color:{THEME["main_color"]}; color:white; padding:15px; display:block; text-align:center; border-radius:50px; font-weight:bold; text-decoration:none;">📨 ENVOYER LA COMMANDE</a>', unsafe_allow_html=True)
     else:
-        st.error("Merci de remplir Nom Téléphone et Instagram pour valider.")
+        st.error("Remplir Nom, Tel et Instagram.")
