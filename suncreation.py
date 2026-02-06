@@ -76,7 +76,7 @@ if ETAT_VACANCES_GLOBAL == "OUI":
 def creer_lien_email(sujet, corps): return f"mailto:{EMAIL_PRO}?subject={quote(sujet)}&body={quote(corps)}"
 
 # --- DONNÉES ---
-PRIX_BOX_FIXE = {"❤️ Box Love (I ❤️ U)": 50}
+PRIX_BOX_FIXE = {"❤️ Box Love (I ❤️ U)": 70}
 PRIX_BOX_CHOCO = {"20cm": 53, "30cm": 70}
 PRIX_ROSES = {7: 20, 10: 25, 15: 30, 20: 35, 25: 40, 30: 45, 35: 50, 40: 55, 45: 60, 50: 65, 55: 70, 60: 75, 65: 80, 70: 90, 75: 95, 80: 100, 85: 105, 90: 110, 95: 115, 100: 120}
 COULEURS_ROSES = ["Noir 🖤", "Blanc 🤍", "Rouge ❤️", "Rose 🌸", "Bleu Clair ❄️", "Bleu Foncé 🦋", "Violet 💜"]
