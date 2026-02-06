@@ -20,7 +20,7 @@ elif aujourdhui.month == 12:
     EFFET_SPECIAL = "snow"
 
 # ==========================================
-# 🎨 DESIGN LUXE + AFFICHAGE HAUT (MOBILE)
+# 🎨 DESIGN LUXE + VISIBILITÉ OPTIMISÉE
 # ==========================================
 css_hearts = ""
 if EFFET_SPECIAL == "hearts":
@@ -39,11 +39,11 @@ if EFFET_SPECIAL == "hearts":
 st.markdown(f"""
 {css_hearts}
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Montserrat:wght@300;400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Montserrat:wght@300;400;600;700&display=swap');
 header, [data-testid="stHeader"], footer, [data-testid="stFooter"], #MainMenu {{ display: none !important; }}
 .stApp {{ background-color: {THEME['bg_color']} !important; }}
 
-/* Style du titre principal Sun Creation */
+/* Style du titre principal */
 .main-title {{
     font-family: 'Playfair Display', serif !important;
     color: {THEME['text_color']} !important;
@@ -56,25 +56,31 @@ header, [data-testid="stHeader"], footer, [data-testid="stFooter"], #MainMenu {{
 
 h1, h2, h3 {{ font-family: 'Playfair Display', serif !important; color: {THEME['text_color']} !important; }}
 .stMarkdown, p, label, .stRadio label, .stSelectbox label, .stCheckbox label, .stMultiSelect label {{
-    font-family: 'Montserrat', sans-serif !important; color: #2D1E12 !important; font-weight: 600 !important;
+    font-family: 'Montserrat', sans-serif !important; color: #2D1E12 !important; font-weight: 700 !important;
+    font-size: 1.05rem !important;
 }}
 
-/* Style de base des champs */
-div[data-baseweb="select"] > div, div[data-baseweb="input"] > div, .stDateInput div, textarea {{
+/* Amélioration de la visibilité des Pills (boutons de choix) */
+button[data-testid="stBaseButton-secondary"] {{
+    background-color: #4A3728 !important;
+    color: white !important;
+    border: 1px solid #D4AF37 !important;
+    font-weight: 600 !important;
+}}
+
+/* Style des champs de saisie */
+div[data-baseweb="input"] > div, .stDateInput div, textarea {{
     background-color: #4A3728 !important; border: 1px solid #D4AF37 !important; border-radius: 8px !important;
     transition: all 0.3s ease;
 }}
 
-/* Effet GLOW doré quand on clique dans une case */
-div[data-baseweb="select"] > div:focus-within,
-div[data-baseweb="input"] > div:focus-within,
-.stDateInput div:focus-within,
-textarea:focus {{
+/* Effet GLOW doré */
+div[data-baseweb="input"] > div:focus-within, textarea:focus {{
     border-color: #FFD700 !important;
     box-shadow: 0 0 12px #D4AF37, 0 0 20px #FFD700 !important;
 }}
 
-input, .stSelectbox div div, textarea {{
+input, textarea {{
     color: white !important; -webkit-text-fill-color: white !important; caret-color: white !important; font-weight: 500 !important;
 }}
 ::placeholder {{ color: #D7CCC8 !important; opacity: 0.7; }}
@@ -88,8 +94,6 @@ button[kind="primary"], .stButton > button {{
 if EFFET_SPECIAL == "snow": st.snow()
 
 # --- ⚙️ SECRETS & TÉLÉCOMMANDE ---
-MDP_DE_SECOURS = "SunCreation-Ultra-Secure-2026-!!#"
-SECRET_PASSWORD = st.secrets.get("ADMIN_PASSWORD", MDP_DE_SECOURS)
 EMAIL_PRO = st.secrets.get("EMAIL_RECEPTION", "sncreat24@gmail.com")
 ETAT_VACANCES_GLOBAL = st.secrets.get("MODE_VACANCES", "NON") 
 
@@ -109,10 +113,9 @@ ACCESSOIRES_BOX_CHOCO = {"🅰️ Initiale (+5€)": 5, "🧸 Doudou (+3.50€)"
 LIVRAISON_OPTIONS = {"📍 Retrait Gonesse": 0, "📦 Colis IDF - 12€": 12, "📦 Colis France - 12€": 12, "🌍 Hors France - 15€": 15, "🚗 Uber / Chauffeur (À VOTRE CHARGE)": 0}
 
 # =========================================================
-# 🏠 EN-TÊTE (HEADER) - TITRE EN HAUT + LOGO
+# 🏠 EN-TÊTE
 # =========================================================
 st.markdown('<p class="main-title">Sun Creation</p>', unsafe_allow_html=True)
-
 col_logo_l, col_logo_c, col_logo_r = st.columns([1, 1.5, 1])
 with col_logo_c:
     try: st.image("logo.jpg", use_container_width=True)
@@ -127,16 +130,17 @@ details_options_mail = ""
 
 # --- PARTIE 1 : BOUQUET ---
 if choix == "🌹 Un Bouquet":
-    st.header("🌹 Configurer mon Bouquet")
-    col1, col2 = st.columns(2)
-    with col1:
-        taille = st.selectbox("Nombre de roses", list(PRIX_ROSES.keys()), format_func=lambda x: f"{x} Roses ({PRIX_ROSES[x]}€)")
-        prix_base = PRIX_ROSES[taille]
-    with col2:
-        try: st.image(f"bouquet_{taille}.jpg", use_container_width=True)
-        except: st.caption("📷 (Image)")
+    st.header("🌹 Mon Bouquet")
+    
+    # MODIF: Pills pour le nombre de roses (Évite le clavier)
+    taille_liste = list(PRIX_ROSES.keys())
+    taille = st.pills("Nombre de roses", taille_liste, format_func=lambda x: f"{x} Roses ({PRIX_ROSES[x]}€)", selection_mode="single")
+    if not taille: taille = 7
+    prix_base = PRIX_ROSES[taille]
+    
+    try: st.image(f"bouquet_{taille}.jpg", use_container_width=True)
+    except: st.caption("📷 (Image)")
         
-    # MODIF: st.pills au lieu de selectbox/multiselect pour éviter le clavier
     couleur_rose = st.pills("Couleur des roses", COULEURS_ROSES, selection_mode="single")
     if not couleur_rose: couleur_rose = "Non défini"
     
@@ -144,7 +148,6 @@ if choix == "🌹 Un Bouquet":
     if not choix_emballage: choix_emballage = "Noir"
     
     prix_papier = 5 if "(+5€)" in choix_emballage else 0
-    
     options_choisies = st.pills("Ajouter des éléments :", list(ACCESSOIRES_BOUQUET.keys()), selection_mode="multi")
     if not options_choisies: options_choisies = []
     
@@ -158,6 +161,7 @@ if choix == "🌹 Un Bouquet":
     if "🅰️ Initiale (+3€)" in options_choisies:
         txt = st.text_input("📝 Quelle initiale ?")
         details_sup += f"\n   -> Initiale : {txt}"
+    
     prix_total = prix_base + prix_papier + sum(ACCESSOIRES_BOUQUET[o] for o in options_choisies)
     details_produit_mail = f"BOUQUET : {taille} roses\n- Couleur : {couleur_rose}\n- Emballage : {choix_emballage}"
     details_options_mail = ", ".join(options_choisies) + details_sup
@@ -165,13 +169,14 @@ if choix == "🌹 Un Bouquet":
 # --- PARTIE 2 : BOX CHOCOLAT ---
 elif choix == "🍫 Box Chocolat":
     st.header("🍫 Ma Box Chocolat")
-    col1, col2 = st.columns(2)
-    with col1:
-        taille_box = st.selectbox("Quelle taille ?", list(PRIX_BOX_CHOCO.keys()), format_func=lambda x: f"Taille {x} ({PRIX_BOX_CHOCO[x]}€)")
-        prix_base = PRIX_BOX_CHOCO[taille_box]
-    with col2:
-        try: st.image(f"box_{taille_box.lower()}.jpg", use_container_width=True)
-        except: st.caption("📷 (Image)")
+    
+    # MODIF: Pills pour la taille (Évite le clavier)
+    taille_box = st.pills("Quelle taille ?", list(PRIX_BOX_CHOCO.keys()), format_func=lambda x: f"Taille {x} ({PRIX_BOX_CHOCO[x]}€)", selection_mode="single")
+    if not taille_box: taille_box = "20cm"
+    prix_base = PRIX_BOX_CHOCO[taille_box]
+    
+    try: st.image(f"box_{taille_box.lower()}.jpg", use_container_width=True)
+    except: st.caption("📷 (Image)")
         
     liste_chocolats = st.pills("Choisissez les chocolats :", ["Kinder Bueno", "Ferrero Rocher", "Milka", "Raffaello", "Schoko-Bons"], selection_mode="multi")
     if not liste_chocolats: liste_chocolats = []
@@ -189,6 +194,7 @@ elif choix == "🍫 Box Chocolat":
     if "🎗️ Bande personnalisée (+10€)" in options_choisies:
         txt = st.text_input("📝 Texte pour la bande :")
         details_sup += f"\n   -> Bande : {txt}"
+    
     prix_total = prix_base + sum(ACCESSOIRES_BOX_CHOCO[o] for o in options_choisies)
     txt_fleurs = f"Roses Éternelles ({couleur_fleur_info})" if fleur_eternelle else "Pas de fleurs"
     details_produit_mail = f"BOX CHOCOLAT : {taille_box}\n- Chocolats : {', '.join(liste_chocolats)}\n- Fleurs : {txt_fleurs}"
@@ -199,13 +205,10 @@ else:
     st.header("❤️ Box Love Signature")
     try: st.image("box_love.jpg", use_container_width=True)
     except: pass
-    
     couleur_love = st.pills("Couleur des fleurs", COULEURS_ROSES, selection_mode="single")
     if not couleur_love: couleur_love = "Non défini"
-    
     liste_chocolats = st.pills("Quels chocolats ?", ["Kinder Bueno", "Ferrero Rocher"], selection_mode="multi")
     if not liste_chocolats: liste_chocolats = []
-    
     prix_total = PRIX_BOX_FIXE[choix]
     details_produit_mail = f"BOX LOVE (I ❤️ U)\n- Fleurs : {couleur_love}\n- Chocolats : {', '.join(liste_chocolats)}"
     details_options_mail = "Aucune option sup."
@@ -218,13 +221,11 @@ frais_port = LIVRAISON_OPTIONS[mode_livraison]
 
 adresse_complete = ""
 if mode_livraison != "📍 Retrait Gonesse":
+    rue = st.text_input("Adresse (Rue, Ville, CP)")
+    adresse_complete = f"{rue}"
     if "Hors France" in mode_livraison:
         pays = st.text_input("🌍 Pays de destination")
-        rue = st.text_input("Adresse (Rue, Ville, CP)")
-        adresse_complete = f"{rue} | PAYS : {pays}"
-    else:
-        rue = st.text_input("Adresse (Rue, Ville, CP)")
-        adresse_complete = f"{rue}"
+        adresse_complete += f" | PAYS : {pays}"
 
 nom = st.text_input("Votre Nom & Prénom")
 tel = st.text_input("📞 Téléphone (Indispensable)")
