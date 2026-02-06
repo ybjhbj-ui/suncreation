@@ -212,4 +212,4 @@ if st.button("✅ VALIDER MA COMMANDE", type="primary", use_container_width=True
 🔒 ACOMPTE (40%) : {acompte:.2f}€"""
         st.markdown(f'<a href="{creer_lien_email(f"Commande {nom}", msg)}" style="background-color:{THEME["main_color"]}; color:white; padding:15px; display:block; text-align:center; border-radius:50px; font-weight:bold; text-decoration:none;">📨 ENVOYER LA COMMANDE</a>', unsafe_allow_html=True)
     else:
-        st.error("Merci de remplir Nom, Téléphone et Instagram pour valider.")
+        st.error("Merci de remplir Nom Téléphone et Instagram pour valider.")
