@@ -20,7 +20,7 @@ elif aujourdhui.month == 12:
     EFFET_SPECIAL = "snow"
 
 # ==========================================
-# 🎨 DESIGN LUXE + ADMIN INVISIBLE
+# 🎨 DESIGN LUXE + AFFICHAGE HAUT (MOBILE)
 # ==========================================
 css_hearts = ""
 if EFFET_SPECIAL == "hearts":
@@ -53,7 +53,6 @@ input, .stSelectbox div div, textarea {{
     color: white !important; -webkit-text-fill-color: white !important; caret-color: white !important; font-weight: 500 !important;
 }}
 ::placeholder {{ color: #D7CCC8 !important; opacity: 0.7; }}
-/* Suppression totale de la sidebar visuelle */
 [data-testid="stSidebar"] {{ display: none; }}
 button[kind="primary"], .stButton > button {{
     background-color: {THEME['main_color']} !important; color: white !important; border-radius: 50px !important; font-weight: bold !important;
@@ -74,13 +73,16 @@ def creer_lien_email(sujet, corps): return f"mailto:{EMAIL_PRO}?subject={quote(s
 PRIX_BOX_FIXE = {"❤️ Box Love (I ❤️ U)": 50}
 PRIX_BOX_CHOCO = {"20cm": 53, "30cm": 70}
 PRIX_ROSES = {7: 20, 10: 25, 15: 30, 20: 35, 25: 40, 30: 45, 35: 50, 40: 55, 45: 60, 50: 65, 55: 70, 60: 75, 65: 80, 70: 90, 75: 95, 80: 100, 85: 105, 90: 110, 95: 115, 100: 120}
-COULEURS_ROSES = ["Rouge ❤️", "Blanc 🤍", "Rose Poudré 🌸", "Fuchsia 💗", "Noir 🖤", "Bleu Roi 💙", "Or (Gold) ✨", "Argent (Silver) 💍", "Mix"]
+
+# MISE À JOUR : Liste de couleurs restreinte
+COULEURS_ROSES = ["Noir 🖤", "Blanc 🤍", "Rouge ❤️", "Rose 🌸", "Bleu Clair ❄️", "Bleu Foncé 🦋", "Violet 💜"]
+
 ACCESSOIRES_BOUQUET = {"🎗️ Bande avec un prénom (+15€)": 15, "💌 Carte + Enveloppe (+5€)": 5, "🦋 Papillon (+2€)": 2, "🎀 Noeud Papillon (+2€)": 2, "✨ Diamants (+2€)": 2, "🏷️ Sticker (+10€)": 10, "👑 Couronne (+10€)": 10, "🧸 Peluche (+3€)": 3, "📸 Photo (+5€)": 5, "💡 LED (+5€)": 5, "🍫 Ferrero (+1€)": 1, "🅰️ Initiale (+3€)": 3}
 ACCESSOIRES_BOX_CHOCO = {"🅰️ Initiale (+5€)": 5, "🧸 Doudou (+3.50€)": 3.5, "🧸🧸 2 Doudous (+7€)": 7, "🎗️ Bande personnalisée (+10€)": 10, "🎂 Topper (+2€)": 2}
 LIVRAISON_OPTIONS = {"📍 Retrait Gonesse": 0, "📦 Colis IDF - 12€": 12, "📦 Colis France - 12€": 12, "🌍 Hors France - 15€": 15, "🚗 Uber / Chauffeur (À VOTRE CHARGE)": 0}
 
 # =========================================================
-# 🏠 EN-TÊTE (HEADER) - REMPLACE LA SIDEBAR
+# 🏠 EN-TÊTE (HEADER)
 # =========================================================
 col_logo, col_titre = st.columns([1, 3])
 with col_logo:
@@ -91,11 +93,9 @@ with col_titre:
     if THEME['nom'] != "Standard":
         st.markdown(f"<p style='color:{THEME['main_color']};font-weight:bold; margin-top:-20px;'>✨ {THEME['nom']}</p>", unsafe_allow_html=True)
 
-# MENU NAVIGATION (Horizontal pour mobile)
 choix = st.radio("Je souhaite commander :", ["🌹 Un Bouquet", "🍫 Box Chocolat", "❤️ Box Love (I ❤️ U)"])
 st.markdown("---")
 
-# --- LOGIQUE ADMIN FANTÔME (Déplacée en haut mais cachée) ---
 params = st.query_params
 en_vacances = False
 if params.get("admin") == "oui":
@@ -110,13 +110,10 @@ if en_vacances:
     st.error("🏖️ **FERMETURE EXCEPTIONNELLE**")
     st.stop()
 
-# --- VARIABLES MAIL ---
 details_produit_mail = ""
 details_options_mail = ""
 
-# =========================================================
-# 🌹 PARTIE 1 : BOUQUET
-# =========================================================
+# --- PARTIE 1 : BOUQUET ---
 if choix == "🌹 Un Bouquet":
     st.header("🌹 Configurer mon Bouquet")
     col1, col2 = st.columns(2)
@@ -126,6 +123,7 @@ if choix == "🌹 Un Bouquet":
     with col2:
         try: st.image(f"bouquet_{taille}.jpg", use_container_width=True)
         except: st.caption("📷 (Image)")
+    
     couleur_rose = st.selectbox("Couleur des roses", COULEURS_ROSES)
     choix_emballage = st.selectbox("Style d'emballage", ["Noir", "Blanc", "Rose", "Rouge", "Bordeaux", "Vert", "Bleu", "Crème", "Dior Noir (+5€)", "Dior Rose (+5€)", "Chanel (+5€)", "LV (+5€)"])
     prix_papier = 5 if "(+5€)" in choix_emballage else 0
@@ -146,9 +144,7 @@ if choix == "🌹 Un Bouquet":
     details_produit_mail = f"BOUQUET : {taille} roses\n- Couleur : {couleur_rose}\n- Emballage : {choix_emballage}"
     details_options_mail = ", ".join(options_choisies) + details_sup
 
-# =========================================================
-# 🍫 PARTIE 2 : BOX CHOCOLAT
-# =========================================================
+# --- PARTIE 2 : BOX CHOCOLAT ---
 elif choix == "🍫 Box Chocolat":
     st.header("🍫 Ma Box Chocolat")
     col1, col2 = st.columns(2)
@@ -158,7 +154,9 @@ elif choix == "🍫 Box Chocolat":
     with col2:
         try: st.image(f"box_{taille_box.lower()}.jpg", use_container_width=True)
         except: st.caption("📷 (Image)")
-    liste_chocolats = st.multiselect("Choisissez les chocolats :", ["Kinder Bueno", "Ferrero Rocher", "Milka", "Raffaello", "Schoko-Bons", "Mixte"])
+    
+    # MISE À JOUR : "Mixte" supprimé ici
+    liste_chocolats = st.multiselect("Choisissez les chocolats :", ["Kinder Bueno", "Ferrero Rocher", "Milka", "Raffaello", "Schoko-Bons"])
     
     fleur_eternelle = st.checkbox("Ajouter des Roses Éternelles ?")
     couleur_fleur_info = ""
@@ -178,22 +176,18 @@ elif choix == "🍫 Box Chocolat":
     details_produit_mail = f"BOX CHOCOLAT : {taille_box}\n- Chocolats : {', '.join(liste_chocolats)}\n- Fleurs : {txt_fleurs}"
     details_options_mail = ", ".join(options_choisies) + details_sup
 
-# =========================================================
-# ❤️ PARTIE 3 : BOX LOVE
-# =========================================================
+# --- PARTIE 3 : BOX LOVE ---
 else:
     st.header("❤️ Box Love Signature")
     try: st.image("box_love.jpg", use_container_width=True)
     except: pass
     couleur_love = st.selectbox("Couleur des fleurs", COULEURS_ROSES)
-    liste_chocolats = st.multiselect("Quels chocolats ?", ["Kinder Bueno", "Ferrero Rocher", "Mixte"])
+    liste_chocolats = st.multiselect("Quels chocolats ?", ["Kinder Bueno", "Ferrero Rocher"])
     prix_total = PRIX_BOX_FIXE[choix]
     details_produit_mail = f"BOX LOVE (I ❤️ U)\n- Fleurs : {couleur_love}\n- Chocolats : {', '.join(liste_chocolats)}"
     details_options_mail = "Aucune option sup."
 
-# =========================================================
-# 🚚 LIVRAISON
-# =========================================================
+# --- LIVRAISON ---
 st.markdown("---")
 st.subheader("🚚 Livraison")
 mode_livraison = st.selectbox("Mode de réception", list(LIVRAISON_OPTIONS.keys()))
