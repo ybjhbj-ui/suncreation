@@ -12,7 +12,6 @@ aujourdhui = date.today()
 THEME = {"nom": "Standard", "bg_color": "#FDF8F5", "main_color": "#D4AF37", "text_color": "#5D4037", "icon": "🌹"}
 EFFET_SPECIAL = None
 
-# SÉLECTION AUTOMATIQUE DE LA SAISON (Ex: Février 2026)
 if aujourdhui.month == 2 and 1 <= aujourdhui.day <= 15:
     THEME = {"nom": "Saint-Valentin", "bg_color": "#FFF0F5", "main_color": "#E91E63", "text_color": "#880E4F", "icon": "💖"}
     EFFET_SPECIAL = "hearts"
@@ -58,6 +57,10 @@ input, .stSelectbox div div, textarea {{
 button[kind="primary"], .stButton > button {{
     background-color: {THEME['main_color']} !important; color: white !important; border-radius: 50px !important; font-weight: bold !important;
 }}
+div[role="radiogroup"] label {{
+    background-color: white; border: 1px solid #E7D8D0; padding: 10px; border-radius: 10px; margin-right: 5px; transition: 0.3s;
+}}
+div[role="radiogroup"] label:hover {{ border-color: {THEME['main_color']}; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -74,20 +77,19 @@ def creer_lien_email(sujet, corps): return f"mailto:{EMAIL_PRO}?subject={quote(s
 PRIX_BOX_FIXE = {"❤️ Box Love (I ❤️ U)": 50}
 PRIX_BOX_CHOCO = {"20cm": 53, "30cm": 70}
 PRIX_ROSES = {7: 20, 10: 25, 15: 30, 20: 35, 25: 40, 30: 45, 35: 50, 40: 55, 45: 60, 50: 65, 55: 70, 60: 75, 65: 80, 70: 90, 75: 95, 80: 100, 85: 105, 90: 110, 95: 115, 100: 120}
-COULEURS_ROSES = ["Rouge ❤️", "Blanc 🤍", "Rose Poudré 🌸", "Fuchsia 💗", "Noir 🖤", "Bleu Roi 💙", "Or (Gold) ✨", "Argent (Silver) 💍", "Mix"]
+
+# 🎨 LISTE DES COULEURS MISE À JOUR (Tes choix uniquement)
+COULEURS_ROSES = ["Noir 🖤", "Rouge ❤️", "Rose 🌸", "Bleu clair 💎", "Bleu foncé 💙", "Blanc 🤍"]
+
 ACCESSOIRES_BOUQUET = {"🎗️ Bande avec un prénom (+15€)": 15, "💌 Carte + Enveloppe (+5€)": 5, "🦋 Papillon (+2€)": 2, "🎀 Noeud Papillon (+2€)": 2, "✨ Diamants (+2€)": 2, "🏷️ Sticker (+10€)": 10, "👑 Couronne (+10€)": 10, "🧸 Peluche (+3€)": 3, "📸 Photo (+5€)": 5, "💡 LED (+5€)": 5, "🍫 Ferrero (+1€)": 1, "🅰️ Initiale (+3€)": 3}
 ACCESSOIRES_BOX_CHOCO = {"🅰️ Initiale (+5€)": 5, "🧸 Doudou (+3.50€)": 3.5, "🧸🧸 2 Doudous (+7€)": 7, "🎗️ Bande personnalisée (+10€)": 10, "🎂 Topper (+2€)": 2}
 LIVRAISON_OPTIONS = {"📍 Retrait Gonesse": 0, "📦 Colis IDF - 12€": 12, "📦 Colis France - 12€": 12, "🌍 Hors France - 15€": 15, "🚗 Uber / Chauffeur (À VOTRE CHARGE)": 0}
 
-# --- SIDEBAR + ADMIN ---
+LISTE_CHOCOLATS_BASE = ["Kinder Bueno", "Ferrero Rocher", "Milka", "Raffaello", "Schoko-Bons"]
+
+# --- SIDEBAR (ADMIN) ---
 with st.sidebar:
-    try: st.image("logo.jpg", width=250)
-    except: st.write("🌹 **Sun Creation**")
-    st.title("Sun Creation")
-    if THEME['nom'] != "Standard": st.markdown(f"<p style='color:{THEME['main_color']};font-weight:bold;'>✨ {THEME['nom']}</p>", unsafe_allow_html=True)
-    choix = st.radio("Je souhaite commander :", ["🌹 Un Bouquet", "🍫 Box Chocolat", "❤️ Box Love (I ❤️ U)"])
-    st.markdown("---")
-    
+    st.caption("Espace privé")
     params = st.query_params
     en_vacances = False
     if params.get("admin") == "oui":
@@ -97,19 +99,29 @@ with st.sidebar:
                 st.success("Accès Direction")
                 en_vacances = st.checkbox("🔴 Activer Mode Vacances")
             elif input_pwd: st.error("Code erroné")
-    st.warning("💳 **Acompte 40% requis**")
 
 if en_vacances:
     st.error("🏖️ **FERMETURE EXCEPTIONNELLE**")
     st.stop()
 
-# --- VARIABLES MAIL ---
+# ==========================================
+# 📱 NAVIGATION MOBILE FIRST
+# ==========================================
+try: st.image("logo.jpg", width=200)
+except: st.title("🌹 Sun Creation")
+
+if THEME['nom'] != "Standard": st.markdown(f"<p style='color:{THEME['main_color']};font-weight:bold;'>✨ {THEME['nom']}</p>", unsafe_allow_html=True)
+
+choix = st.radio("Je souhaite commander :", ["🌹 Un Bouquet", "🍫 Box Chocolat", "❤️ Box Love (I ❤️ U)"], horizontal=True)
+
+st.markdown("---")
+
 details_produit_mail = ""
 details_options_mail = ""
 
 # --- PARTIE 1 : BOUQUET ---
 if choix == "🌹 Un Bouquet":
-    st.title("🌹 Configurer mon Bouquet")
+    st.header("🌹 Configurer mon Bouquet")
     col1, col2 = st.columns(2)
     with col1:
         taille = st.selectbox("Nombre de roses", list(PRIX_ROSES.keys()), format_func=lambda x: f"{x} Roses ({PRIX_ROSES[x]}€)")
@@ -139,7 +151,7 @@ if choix == "🌹 Un Bouquet":
 
 # --- PARTIE 2 : BOX CHOCOLAT ---
 elif choix == "🍫 Box Chocolat":
-    st.title("🍫 Ma Box Chocolat")
+    st.header("🍫 Ma Box Chocolat")
     col1, col2 = st.columns(2)
     with col1:
         taille_box = st.selectbox("Quelle taille ?", list(PRIX_BOX_CHOCO.keys()), format_func=lambda x: f"Taille {x} ({PRIX_BOX_CHOCO[x]}€)")
@@ -147,7 +159,9 @@ elif choix == "🍫 Box Chocolat":
     with col2:
         try: st.image(f"box_{taille_box.lower()}.jpg", use_container_width=True)
         except: st.caption("📷 (Image)")
-    liste_chocolats = st.multiselect("Choisissez les chocolats :", ["Kinder Bueno", "Ferrero Rocher", "Milka", "Raffaello", "Schoko-Bons", "Mixte"])
+    
+    liste_chocolats = st.multiselect("Choisissez les chocolats :", LISTE_CHOCOLATS_BASE)
+    
     fleur_eternelle = st.checkbox("Ajouter des Roses Éternelles ?")
     couleur_fleur_info = st.text_input("Couleur des roses éternelles :") if fleur_eternelle else ""
     options_choisies = st.multiselect("Ajouter des options :", list(ACCESSOIRES_BOX_CHOCO.keys()))
@@ -165,11 +179,12 @@ elif choix == "🍫 Box Chocolat":
 
 # --- PARTIE 3 : BOX LOVE ---
 else:
-    st.title("❤️ Box Love Signature")
+    st.header("❤️ Box Love Signature")
     try: st.image("box_love.jpg", use_container_width=True)
     except: pass
     couleur_love = st.selectbox("Couleur des fleurs", COULEURS_ROSES)
-    liste_chocolats = st.multiselect("Quels chocolats ?", ["Kinder Bueno", "Ferrero Rocher", "Mixte"])
+    liste_chocolats = st.multiselect("Quels chocolats ?", LISTE_CHOCOLATS_BASE)
+    
     prix_total = PRIX_BOX_FIXE[choix]
     details_produit_mail = f"BOX LOVE (I ❤️ U)\n- Fleurs : {couleur_love}\n- Chocolats : {', '.join(liste_chocolats)}"
     details_options_mail = "Aucune option sup."
@@ -211,3 +226,4 @@ if st.button("✅ VALIDER MA COMMANDE", type="primary", use_container_width=True
         msg = f"COMMANDE SUN CREATION 🌹\nClient : {nom} ({inst})\nAdresse : {adresse_complete if adresse_complete else 'Retrait place'}\nProduit : {choix}\nDétails :\n{details_produit_mail}\nOptions :\n{details_options_mail}\nTotal : {total_final}€"
         st.balloons()
         st.markdown(f'<a href="{creer_lien_email(f"Commande {nom}", msg)}" style="background-color:{THEME["main_color"]}; color:white; padding:15px; display:block; text-align:center; border-radius:50px; font-weight:bold; text-decoration:none;">📨 ENVOYER LA COMMANDE</a>', unsafe_allow_html=True)
+
