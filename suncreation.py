@@ -12,6 +12,7 @@ aujourdhui = date.today()
 THEME = {"nom": "Standard", "bg_color": "#FDF8F5", "main_color": "#D4AF37", "text_color": "#5D4037", "icon": "🌹"}
 EFFET_SPECIAL = None
 
+# Note : Pour tester les cœurs maintenant, tu peux changer temporairement le mois ci-dessous en '2'.
 if aujourdhui.month == 2 and 1 <= aujourdhui.day <= 15:
     THEME = {"nom": "Saint-Valentin", "bg_color": "#FFF0F5", "main_color": "#E91E63", "text_color": "#880E4F", "icon": "💖"}
     EFFET_SPECIAL = "hearts"
@@ -22,7 +23,22 @@ elif aujourdhui.month == 12:
 # ==========================================
 # 🎨 DESIGN LUXE + AFFICHAGE HAUT (MOBILE)
 # ==========================================
+css_hearts = ""
+if EFFET_SPECIAL == "hearts":
+    css_hearts = """
+    <div class="hearts-container">
+        <div class="heart">❤️</div><div class="heart">💖</div><div class="heart">❤️</div>
+    </div>
+    <style>
+    .hearts-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+    .heart { position: absolute; top: -10%; font-size: 20px; animation: heartRain 10s linear infinite; opacity: 0; }
+    .heart:nth-child(1) { left: 10%; animation-delay: 0s; } .heart:nth-child(2) { left: 50%; animation-delay: 4s; } .heart:nth-child(3) { left: 85%; animation-delay: 8s; }
+    @keyframes heartRain { 0% { opacity: 0; } 10% { opacity: 0.5; } 100% { transform: translateY(110vh); opacity: 0; } }
+    </style>
+    """
+
 st.markdown(f"""
+{css_hearts}
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Montserrat:wght@300;400;600&display=swap');
 header, [data-testid="stHeader"], footer, [data-testid="stFooter"], #MainMenu {{ display: none !important; }}
@@ -31,9 +47,23 @@ h1, h2, h3 {{ font-family: 'Playfair Display', serif !important; color: {THEME['
 .stMarkdown, p, label, .stRadio label, .stSelectbox label, .stCheckbox label, .stMultiSelect label {{
     font-family: 'Montserrat', sans-serif !important; color: #2D1E12 !important; font-weight: 600 !important;
 }}
+
+/* Style de base des champs */
 div[data-baseweb="select"] > div, div[data-baseweb="input"] > div, .stDateInput div, textarea {{
     background-color: #4A3728 !important; border: 1px solid #D4AF37 !important; border-radius: 8px !important;
+    transition: all 0.3s ease; /* Transition douce pour le glow */
 }}
+
+/* --- NOUVEAU : Effet GLOW doré quand on clique dans une case --- */
+div[data-baseweb="select"] > div:focus-within,
+div[data-baseweb="input"] > div:focus-within,
+.stDateInput div:focus-within,
+textarea:focus {{
+    border-color: #FFD700 !important; /* Bordure plus jaune doré */
+    box-shadow: 0 0 12px #D4AF37, 0 0 20px #FFD700 !important; /* Double lueur dorée */
+}}
+/* --------------------------------------------------------------- */
+
 input, .stSelectbox div div, textarea {{
     color: white !important; -webkit-text-fill-color: white !important; caret-color: white !important; font-weight: 500 !important;
 }}
@@ -48,8 +78,9 @@ button[kind="primary"], .stButton > button {{
 if EFFET_SPECIAL == "snow": st.snow()
 
 # --- ⚙️ SECRETS & TÉLÉCOMMANDE ---
+MDP_DE_SECOURS = "SunCreation-Ultra-Secure-2026-!!#"
+SECRET_PASSWORD = st.secrets.get("ADMIN_PASSWORD", MDP_DE_SECOURS)
 EMAIL_PRO = st.secrets.get("EMAIL_RECEPTION", "sncreat24@gmail.com")
-# SI TU METS "OUI" DANS TES SECRETS, LE SITE SE FERME POUR TOUT LE MONDE
 ETAT_VACANCES_GLOBAL = st.secrets.get("MODE_VACANCES", "NON") 
 
 if ETAT_VACANCES_GLOBAL == "OUI":
@@ -63,7 +94,7 @@ PRIX_BOX_FIXE = {"❤️ Box Love (I ❤️ U)": 50}
 PRIX_BOX_CHOCO = {"20cm": 53, "30cm": 70}
 PRIX_ROSES = {7: 20, 10: 25, 15: 30, 20: 35, 25: 40, 30: 45, 35: 50, 40: 55, 45: 60, 50: 65, 55: 70, 60: 75, 65: 80, 70: 90, 75: 95, 80: 100, 85: 105, 90: 110, 95: 115, 100: 120}
 
-# Uniquement tes 7 couleurs
+# Couleurs restreintes
 COULEURS_ROSES = ["Noir 🖤", "Blanc 🤍", "Rouge ❤️", "Rose 🌸", "Bleu Clair ❄️", "Bleu Foncé 🦋", "Violet 💜"]
 
 ACCESSOIRES_BOUQUET = {"🎗️ Bande avec un prénom (+15€)": 15, "💌 Carte + Enveloppe (+5€)": 5, "🦋 Papillon (+2€)": 2, "🎀 Noeud Papillon (+2€)": 2, "✨ Diamants (+2€)": 2, "🏷️ Sticker (+10€)": 10, "👑 Couronne (+10€)": 10, "🧸 Peluche (+3€)": 3, "📸 Photo (+5€)": 5, "💡 LED (+5€)": 5, "🍫 Ferrero (+1€)": 1, "🅰️ Initiale (+3€)": 3}
@@ -79,9 +110,26 @@ with col_logo:
     except: st.write("🌹")
 with col_titre:
     st.title("Sun Creation")
+    if THEME['nom'] != "Standard":
+        st.markdown(f"<p style='color:{THEME['main_color']};font-weight:bold; margin-top:-20px;'>✨ {THEME['nom']}</p>", unsafe_allow_html=True)
 
 choix = st.radio("Je souhaite commander :", ["🌹 Un Bouquet", "🍫 Box Chocolat", "❤️ Box Love (I ❤️ U)"])
 st.markdown("---")
+
+# --- CONFIG ADMIN (CACHÉE) ---
+params = st.query_params
+en_vacances = False
+if params.get("admin") == "oui":
+    with st.expander("⚙️ Configuration Secrète"):
+        input_pwd = st.text_input("Code de sécurité", type="password")
+        if input_pwd == SECRET_PASSWORD: 
+            st.success("Accès Direction")
+            en_vacances = st.checkbox("🔴 Activer Mode Vacances")
+        elif input_pwd: st.error("Code erroné")
+
+if en_vacances:
+    st.error("🏖️ **FERMETURE EXCEPTIONNELLE**")
+    st.stop()
 
 details_produit_mail = ""
 details_options_mail = ""
@@ -124,7 +172,7 @@ elif choix == "🍫 Box Chocolat":
     with col2:
         try: st.image(f"box_{taille_box.lower()}.jpg", use_container_width=True)
         except: st.caption("📷 (Image)")
-    # "Mixte" supprimé ici
+    # Pas de mixte
     liste_chocolats = st.multiselect("Choisissez les chocolats :", ["Kinder Bueno", "Ferrero Rocher", "Milka", "Raffaello", "Schoko-Bons"])
     fleur_eternelle = st.checkbox("Ajouter des Roses Éternelles ?")
     couleur_fleur_info = st.selectbox("Couleur des roses :", COULEURS_ROSES) if fleur_eternelle else ""
