@@ -98,9 +98,12 @@ details_options_mail = ""
 if choix == "🌹 Un Bouquet":
     st.header("🌹 Mon Bouquet")
     
-    # MODIF 1 : Curseur (Slider) pour le nombre de roses -> Zéro clavier
-    taille = st.select_slider("Nombre de roses", options=list(PRIX_ROSES.keys()), format_func=lambda x: f"{x} Roses")
+    # 1. Slider avec prix DANS le texte + Prix affiché en gros dessous
+    taille = st.select_slider("Nombre de roses", options=list(PRIX_ROSES.keys()), format_func=lambda x: f"{x} Roses ({PRIX_ROSES[x]}€)")
     prix_base = PRIX_ROSES[taille]
+    
+    # Affichage du prix en gros pour être sûr qu'on le voit
+    st.markdown(f"<h3 style='text-align:center; color:{THEME['main_color']}; margin-top:-10px;'>Prix Bouquet : {prix_base} €</h3>", unsafe_allow_html=True)
     
     try: st.image(f"bouquet_{taille}.jpg", use_container_width=True)
     except: st.caption("📷 (Image)")
@@ -109,17 +112,36 @@ if choix == "🌹 Un Bouquet":
     choix_emballage = st.selectbox("Style d'emballage", ["Noir", "Blanc", "Rose", "Rouge", "Bordeaux", "Bleu", "Dior (+5€)", "Chanel (+5€)"])
     prix_papier = 5 if "(+5€)" in str(choix_emballage) else 0
     
-    # MODIF 2 : Cases à cocher dans un menu déroulant -> Zéro clavier
+    # 2. Options avec zone de texte qui s'ouvre IMMEDIATEMENT
+    st.subheader("Ajouter des options")
     options_choisies = []
-    with st.expander("➕ Ajouter des options (Cliquer ici)"):
-        for opt in ACCESSOIRES_BOUQUET.keys():
-            if st.checkbox(opt):
-                options_choisies.append(opt)
+    details_sup_list = []
+    
+    # On boucle sur chaque option pour créer une case à cocher
+    for opt in ACCESSOIRES_BOUQUET.keys():
+        if st.checkbox(opt): # Si l'utilisateur coche la case
+            options_choisies.append(opt)
+            
+            # Si c'est une option qui nécessite du texte, on affiche la case TOUT DE SUITE
+            if "Bande" in opt:
+                val = st.text_input(f"📝 Écrire le prénom pour la bande :", key=f"txt_{opt}")
+                if val: details_sup_list.append(f"Prénom Bande: {val}")
+            
+            elif "Carte" in opt:
+                val = st.text_area(f"📝 Écrire le message de la carte :", key=f"txt_{opt}")
+                if val: details_sup_list.append(f"Message Carte: {val}")
+            
+            elif "Initiale" in opt:
+                val = st.text_input(f"📝 Quelle initiale ?", key=f"txt_{opt}")
+                if val: details_sup_list.append(f"Initiale: {val}")
     
     prix_total = prix_base + prix_papier + sum(ACCESSOIRES_BOUQUET[o] for o in options_choisies)
     
     details_produit_mail = f"BOUQUET : {taille} roses\n- Couleur : {couleur_rose}\n- Emballage : {choix_emballage}"
+    # On ajoute les infos textes (prénom, message) au mail
     details_options_mail = ", ".join(options_choisies)
+    if details_sup_list:
+        details_options_mail += "\n\n📋 PERSONNALISATION :\n" + "\n".join(details_sup_list)
 
 # --- PARTIE 2 : BOX CHOCOLAT ---
 elif choix == "🍫 Box Chocolat":
@@ -134,11 +156,26 @@ elif choix == "🍫 Box Chocolat":
     fleur_eternelle = st.checkbox("Ajouter des Roses Éternelles ?")
     couleur_fleur_info = st.selectbox("Couleur roses :", COULEURS_ROSES) if fleur_eternelle else ""
     
-    options_choisies = st.multiselect("Options :", list(ACCESSOIRES_BOX_CHOCO.keys()))
+    # Options Box Choco (Même système si besoin de texte, ex: Initiale)
+    options_choisies = []
+    details_sup_list = []
+    st.write("**Options supplémentaires :**")
+    for opt in ACCESSOIRES_BOX_CHOCO.keys():
+        if st.checkbox(opt, key=f"chk_box_{opt}"):
+            options_choisies.append(opt)
+            if "Initiale" in opt:
+                val = st.text_input("📝 Quelle initiale ?", key=f"txt_box_{opt}")
+                if val: details_sup_list.append(f"Initiale: {val}")
+            if "Bande" in opt:
+                val = st.text_input("📝 Texte de la bande :", key=f"txt_box_{opt}")
+                if val: details_sup_list.append(f"Bande: {val}")
+
     prix_total = prix_base + sum(ACCESSOIRES_BOX_CHOCO[o] for o in options_choisies)
     
     details_produit_mail = f"BOX CHOCOLAT : {taille_box}\n- Chocolats : {', '.join(liste_chocolats)}\n- Fleurs : {couleur_fleur_info}"
     details_options_mail = ", ".join(options_choisies)
+    if details_sup_list:
+        details_options_mail += "\n\n📋 PERSONNALISATION :\n" + "\n".join(details_sup_list)
 
 # --- PARTIE 3 : BOX LOVE ---
 else:
@@ -186,6 +223,12 @@ st.markdown(f"""
 if st.button("✅ VALIDER MA COMMANDE", type="primary", use_container_width=True):
     if nom and inst and tel:
         msg = f"COMMANDE SUN CREATION\nClient: {nom}\nTel: {tel}\nInsta: {inst}\nProduit: {choix}\nInfos: {details_produit_mail}\nTotal: {total_final}€"
+        # Ajout des détails de personnalisation dans le message
+        if "PERSONNALISATION" in details_options_mail:
+             msg += f"\n\nOPTIONS:\n{details_options_mail}"
+        else:
+             msg += f"\nOptions: {details_options_mail}"
+
         st.markdown(f'<a href="{creer_lien_email(f"Commande {nom}", msg)}" style="background-color:{THEME["main_color"]}; color:white; padding:15px; display:block; text-align:center; border-radius:50px; font-weight:bold; text-decoration:none;">📨 ENVOYER LA COMMANDE</a>', unsafe_allow_html=True)
     else:
         st.error("Merci de remplir Nom, Téléphone et Instagram pour valider.")
