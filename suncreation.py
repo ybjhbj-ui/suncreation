@@ -198,7 +198,7 @@ else:
     try: st.image("box_love.jpg", use_container_width=True)
     except: pass
     couleur_love = st.selectbox("Couleur des fleurs", COULEURS_ROSES)
-    liste_chocolats = st.multiselect("Chocolats :", ["Kinder Bueno", "Ferrero Rocher"])
+    liste_chocolats = st.multiselect("Chocolats :", ["Kinder Bueno", "Ferrero Rocher", "Milka", "Raffaello", "Schoko-Bons"])
     prix_article = PRIX_BOX_LOVE_FIXE
     if st.button(f"➕ AJOUTER AU PANIER ({prix_article}€)", type="primary", use_container_width=True):
         st.session_state.panier.append({
