@@ -12,7 +12,6 @@ aujourdhui = date.today()
 THEME = {"nom": "Standard", "bg_color": "#FDF8F5", "main_color": "#D4AF37", "text_color": "#5D4037", "icon": "🌹"}
 EFFET_SPECIAL = None
 
-# SÉLECTION AUTOMATIQUE DE LA SAISON (Ex: Février 2026)
 if aujourdhui.month == 2 and 1 <= aujourdhui.day <= 15:
     THEME = {"nom": "Saint-Valentin", "bg_color": "#FFF0F5", "main_color": "#E91E63", "text_color": "#880E4F", "icon": "💖"}
     EFFET_SPECIAL = "hearts"
@@ -43,7 +42,7 @@ st.markdown(f"""
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Montserrat:wght@300;400;600&display=swap');
 header, [data-testid="stHeader"], footer, [data-testid="stFooter"], #MainMenu {{ display: none !important; }}
 .stApp {{ background-color: {THEME['bg_color']} !important; }}
-h1, h2, h3, [data-testid="stSidebar"] h1 {{ font-family: 'Playfair Display', serif !important; color: {THEME['text_color']} !important; }}
+h1, h2, h3 {{ font-family: 'Playfair Display', serif !important; color: {THEME['text_color']} !important; }}
 .stMarkdown, p, label, .stRadio label, .stSelectbox label, .stCheckbox label, .stMultiSelect label {{
     font-family: 'Montserrat', sans-serif !important; color: #2D1E12 !important; font-weight: 600 !important;
 }}
@@ -54,7 +53,8 @@ input, .stSelectbox div div, textarea {{
     color: white !important; -webkit-text-fill-color: white !important; caret-color: white !important; font-weight: 500 !important;
 }}
 ::placeholder {{ color: #D7CCC8 !important; opacity: 0.7; }}
-[data-testid="stSidebar"] {{ background-color: #F8F0EB !important; border-right: 1px solid #E7D8D0; }}
+/* Suppression totale de la sidebar visuelle */
+[data-testid="stSidebar"] {{ display: none; }}
 button[kind="primary"], .stButton > button {{
     background-color: {THEME['main_color']} !important; color: white !important; border-radius: 50px !important; font-weight: bold !important;
 }}
@@ -79,25 +79,32 @@ ACCESSOIRES_BOUQUET = {"🎗️ Bande avec un prénom (+15€)": 15, "💌 Carte
 ACCESSOIRES_BOX_CHOCO = {"🅰️ Initiale (+5€)": 5, "🧸 Doudou (+3.50€)": 3.5, "🧸🧸 2 Doudous (+7€)": 7, "🎗️ Bande personnalisée (+10€)": 10, "🎂 Topper (+2€)": 2}
 LIVRAISON_OPTIONS = {"📍 Retrait Gonesse": 0, "📦 Colis IDF - 12€": 12, "📦 Colis France - 12€": 12, "🌍 Hors France - 15€": 15, "🚗 Uber / Chauffeur (À VOTRE CHARGE)": 0}
 
-# --- SIDEBAR + ADMIN ---
-with st.sidebar:
-    try: st.image("logo.jpg", width=250)
-    except: st.write("🌹 **Sun Creation**")
+# =========================================================
+# 🏠 EN-TÊTE (HEADER) - REMPLACE LA SIDEBAR
+# =========================================================
+col_logo, col_titre = st.columns([1, 3])
+with col_logo:
+    try: st.image("logo.jpg", use_container_width=True)
+    except: st.write("🌹")
+with col_titre:
     st.title("Sun Creation")
-    if THEME['nom'] != "Standard": st.markdown(f"<p style='color:{THEME['main_color']};font-weight:bold;'>✨ {THEME['nom']}</p>", unsafe_allow_html=True)
-    choix = st.radio("Je souhaite commander :", ["🌹 Un Bouquet", "🍫 Box Chocolat", "❤️ Box Love (I ❤️ U)"])
-    st.markdown("---")
-    
-    params = st.query_params
-    en_vacances = False
-    if params.get("admin") == "oui":
-        with st.expander("⚙️ Configuration Secrète"):
-            input_pwd = st.text_input("Code de sécurité", type="password")
-            if input_pwd == SECRET_PASSWORD: 
-                st.success("Accès Direction")
-                en_vacances = st.checkbox("🔴 Activer Mode Vacances")
-            elif input_pwd: st.error("Code erroné")
-    st.warning("💳 **Acompte 40% requis**")
+    if THEME['nom'] != "Standard":
+        st.markdown(f"<p style='color:{THEME['main_color']};font-weight:bold; margin-top:-20px;'>✨ {THEME['nom']}</p>", unsafe_allow_html=True)
+
+# MENU NAVIGATION (Horizontal pour mobile)
+choix = st.radio("Je souhaite commander :", ["🌹 Un Bouquet", "🍫 Box Chocolat", "❤️ Box Love (I ❤️ U)"])
+st.markdown("---")
+
+# --- LOGIQUE ADMIN FANTÔME (Déplacée en haut mais cachée) ---
+params = st.query_params
+en_vacances = False
+if params.get("admin") == "oui":
+    with st.expander("⚙️ Configuration Secrète"):
+        input_pwd = st.text_input("Code de sécurité", type="password")
+        if input_pwd == SECRET_PASSWORD: 
+            st.success("Accès Direction")
+            en_vacances = st.checkbox("🔴 Activer Mode Vacances")
+        elif input_pwd: st.error("Code erroné")
 
 if en_vacances:
     st.error("🏖️ **FERMETURE EXCEPTIONNELLE**")
@@ -107,9 +114,11 @@ if en_vacances:
 details_produit_mail = ""
 details_options_mail = ""
 
-# --- PARTIE 1 : BOUQUET ---
+# =========================================================
+# 🌹 PARTIE 1 : BOUQUET
+# =========================================================
 if choix == "🌹 Un Bouquet":
-    st.title("🌹 Configurer mon Bouquet")
+    st.header("🌹 Configurer mon Bouquet")
     col1, col2 = st.columns(2)
     with col1:
         taille = st.selectbox("Nombre de roses", list(PRIX_ROSES.keys()), format_func=lambda x: f"{x} Roses ({PRIX_ROSES[x]}€)")
@@ -137,9 +146,11 @@ if choix == "🌹 Un Bouquet":
     details_produit_mail = f"BOUQUET : {taille} roses\n- Couleur : {couleur_rose}\n- Emballage : {choix_emballage}"
     details_options_mail = ", ".join(options_choisies) + details_sup
 
-# --- PARTIE 2 : BOX CHOCOLAT ---
+# =========================================================
+# 🍫 PARTIE 2 : BOX CHOCOLAT
+# =========================================================
 elif choix == "🍫 Box Chocolat":
-    st.title("🍫 Ma Box Chocolat")
+    st.header("🍫 Ma Box Chocolat")
     col1, col2 = st.columns(2)
     with col1:
         taille_box = st.selectbox("Quelle taille ?", list(PRIX_BOX_CHOCO.keys()), format_func=lambda x: f"Taille {x} ({PRIX_BOX_CHOCO[x]}€)")
@@ -150,7 +161,6 @@ elif choix == "🍫 Box Chocolat":
     liste_chocolats = st.multiselect("Choisissez les chocolats :", ["Kinder Bueno", "Ferrero Rocher", "Milka", "Raffaello", "Schoko-Bons", "Mixte"])
     
     fleur_eternelle = st.checkbox("Ajouter des Roses Éternelles ?")
-    # MISE À JOUR : On remplace le texte libre par la liste officielle des couleurs
     couleur_fleur_info = ""
     if fleur_eternelle:
         couleur_fleur_info = st.selectbox("Couleur des roses éternelles :", COULEURS_ROSES)
@@ -168,9 +178,11 @@ elif choix == "🍫 Box Chocolat":
     details_produit_mail = f"BOX CHOCOLAT : {taille_box}\n- Chocolats : {', '.join(liste_chocolats)}\n- Fleurs : {txt_fleurs}"
     details_options_mail = ", ".join(options_choisies) + details_sup
 
-# --- PARTIE 3 : BOX LOVE ---
+# =========================================================
+# ❤️ PARTIE 3 : BOX LOVE
+# =========================================================
 else:
-    st.title("❤️ Box Love Signature")
+    st.header("❤️ Box Love Signature")
     try: st.image("box_love.jpg", use_container_width=True)
     except: pass
     couleur_love = st.selectbox("Couleur des fleurs", COULEURS_ROSES)
@@ -179,7 +191,9 @@ else:
     details_produit_mail = f"BOX LOVE (I ❤️ U)\n- Fleurs : {couleur_love}\n- Chocolats : {', '.join(liste_chocolats)}"
     details_options_mail = "Aucune option sup."
 
-# --- LIVRAISON ---
+# =========================================================
+# 🚚 LIVRAISON
+# =========================================================
 st.markdown("---")
 st.subheader("🚚 Livraison")
 mode_livraison = st.selectbox("Mode de réception", list(LIVRAISON_OPTIONS.keys()))
@@ -199,6 +213,8 @@ if mode_livraison != "📍 Retrait Gonesse":
 
 nom = st.text_input("Votre Nom & Prénom")
 inst = st.text_input("Votre Instagram")
+st.warning("💳 **Acompte 40% requis**")
+
 total_final = prix_total + frais_port
 acompte = total_final * 0.40
 
