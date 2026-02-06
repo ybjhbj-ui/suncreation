@@ -74,7 +74,6 @@ PRIX_BOX_FIXE = {"❤️ Box Love (I ❤️ U)": 50}
 PRIX_BOX_CHOCO = {"20cm": 53, "30cm": 70}
 PRIX_ROSES = {7: 20, 10: 25, 15: 30, 20: 35, 25: 40, 30: 45, 35: 50, 40: 55, 45: 60, 50: 65, 55: 70, 60: 75, 65: 80, 70: 90, 75: 95, 80: 100, 85: 105, 90: 110, 95: 115, 100: 120}
 
-# MISE À JOUR : Liste de couleurs restreinte
 COULEURS_ROSES = ["Noir 🖤", "Blanc 🤍", "Rouge ❤️", "Rose 🌸", "Bleu Clair ❄️", "Bleu Foncé 🦋", "Violet 💜"]
 
 ACCESSOIRES_BOUQUET = {"🎗️ Bande avec un prénom (+15€)": 15, "💌 Carte + Enveloppe (+5€)": 5, "🦋 Papillon (+2€)": 2, "🎀 Noeud Papillon (+2€)": 2, "✨ Diamants (+2€)": 2, "🏷️ Sticker (+10€)": 10, "👑 Couronne (+10€)": 10, "🧸 Peluche (+3€)": 3, "📸 Photo (+5€)": 5, "💡 LED (+5€)": 5, "🍫 Ferrero (+1€)": 1, "🅰️ Initiale (+3€)": 3}
@@ -155,7 +154,6 @@ elif choix == "🍫 Box Chocolat":
         try: st.image(f"box_{taille_box.lower()}.jpg", use_container_width=True)
         except: st.caption("📷 (Image)")
     
-    # MISE À JOUR : "Mixte" supprimé ici
     liste_chocolats = st.multiselect("Choisissez les chocolats :", ["Kinder Bueno", "Ferrero Rocher", "Milka", "Raffaello", "Schoko-Bons"])
     
     fleur_eternelle = st.checkbox("Ajouter des Roses Éternelles ?")
@@ -198,14 +196,14 @@ if mode_livraison != "📍 Retrait Gonesse":
     if "Hors France" in mode_livraison:
         pays = st.text_input("🌍 Pays de destination")
         rue = st.text_input("Adresse (Rue, Ville, CP)")
-        tel = st.text_input("Téléphone")
-        adresse_complete = f"{rue} | PAYS : {pays} | Tél: {tel}"
+        adresse_complete = f"{rue} | PAYS : {pays}"
     else:
         rue = st.text_input("Adresse (Rue, Ville, CP)")
-        tel = st.text_input("Téléphone")
-        adresse_complete = f"{rue} | Tél: {tel}"
+        adresse_complete = f"{rue}"
 
+# MODIFICATION : Tél demandé à tout le monde pour le mail
 nom = st.text_input("Votre Nom & Prénom")
+tel = st.text_input("Téléphone")
 inst = st.text_input("Votre Instagram")
 st.warning("💳 **Acompte 40% requis**")
 
@@ -222,7 +220,32 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 if st.button("✅ VALIDER MA COMMANDE", type="primary", use_container_width=True):
-    if nom and inst:
-        msg = f"COMMANDE SUN CREATION 🌹\nClient : {nom} ({inst})\nAdresse : {adresse_complete if adresse_complete else 'Retrait place'}\nProduit : {choix}\nDétails :\n{details_produit_mail}\nOptions :\n{details_options_mail}\nTotal : {total_final}€"
+    if nom and inst and tel:
+        # MISE À JOUR : Mail "Beau à voir" avec Acompte et Téléphone
+        msg = f"""✨ NOUVELLE COMMANDE SUN CREATION ✨
+__________________________________
+
+👤 CLIENT
+• Nom : {nom}
+• Insta : {inst}
+• Tél : {tel}
+
+📦 DÉTAILS
+• Produit : {choix}
+{details_produit_mail.replace(chr(10), chr(10))}
+
+➕ OPTIONS
+{details_options_mail}
+
+🚚 RÉCEPTION
+• Mode : {mode_livraison}
+• Adresse : {adresse_complete if adresse_complete else 'Retrait Gonesse'}
+
+💰 PAIEMENT
+• TOTAL : {total_final} €
+• 🔒 ACOMPTE (40%) : {acompte:.2f} €
+__________________________________"""
         st.balloons()
         st.markdown(f'<a href="{creer_lien_email(f"Commande {nom}", msg)}" style="background-color:{THEME["main_color"]}; color:white; padding:15px; display:block; text-align:center; border-radius:50px; font-weight:bold; text-decoration:none;">📨 ENVOYER LA COMMANDE</a>', unsafe_allow_html=True)
+    else:
+        st.error("Merci de remplir Nom, Téléphone et Instagram.")
