@@ -150,11 +150,11 @@ elif choix == "🍫 Box Chocolat":
     liste_chocolats = st.multiselect("Choisissez les chocolats :", ["Kinder Bueno", "Ferrero Rocher", "Milka", "Raffaello", "Schoko-Bons", "Mixte"])
     
     fleur_eternelle = st.checkbox("Ajouter des Roses Éternelles ?")
+    # MISE À JOUR : On remplace le texte libre par la liste officielle des couleurs
     couleur_fleur_info = ""
     if fleur_eternelle:
-        # HARMONISATION : On utilise maintenant la liste COULEURS_ROSES au lieu d'un texte libre
         couleur_fleur_info = st.selectbox("Couleur des roses éternelles :", COULEURS_ROSES)
-    
+        
     options_choisies = st.multiselect("Ajouter des options :", list(ACCESSOIRES_BOX_CHOCO.keys()))
     details_sup = ""
     if "🅰️ Initiale (+5€)" in options_choisies:
@@ -216,4 +216,3 @@ if st.button("✅ VALIDER MA COMMANDE", type="primary", use_container_width=True
         msg = f"COMMANDE SUN CREATION 🌹\nClient : {nom} ({inst})\nAdresse : {adresse_complete if adresse_complete else 'Retrait place'}\nProduit : {choix}\nDétails :\n{details_produit_mail}\nOptions :\n{details_options_mail}\nTotal : {total_final}€"
         st.balloons()
         st.markdown(f'<a href="{creer_lien_email(f"Commande {nom}", msg)}" style="background-color:{THEME["main_color"]}; color:white; padding:15px; display:block; text-align:center; border-radius:50px; font-weight:bold; text-decoration:none;">📨 ENVOYER LA COMMANDE</a>', unsafe_allow_html=True)
-
