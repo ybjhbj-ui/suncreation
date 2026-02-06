@@ -3,7 +3,11 @@ from datetime import date
 from urllib.parse import quote
 
 # --- 1. CONFIGURATION ---
-st.set_page_config(page_title="Sun Creation - Devis", page_icon="🌹", layout="centered")
+st.set_page_config(page_title="Sun Creation - Boutique", page_icon="🌹", layout="centered")
+
+# --- INITIALISATION DU PANIER ---
+if 'panier' not in st.session_state:
+    st.session_state.panier = []
 
 # ==========================================
 # 🧠 OPTIONS INTELLIGENTES (SAISONS)
@@ -20,9 +24,24 @@ elif aujourdhui.month == 12:
     EFFET_SPECIAL = "snow"
 
 # ==========================================
-# 🎨 DESIGN LUXE
+# 🎨 DESIGN LUXE (TON PRÉFÉRÉ)
 # ==========================================
+css_hearts = ""
+if EFFET_SPECIAL == "hearts":
+    css_hearts = """
+    <div class="hearts-container">
+        <div class="heart">❤️</div><div class="heart">💖</div><div class="heart">❤️</div>
+    </div>
+    <style>
+    .hearts-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+    .heart { position: absolute; top: -10%; font-size: 20px; animation: heartRain 10s linear infinite; opacity: 0; }
+    .heart:nth-child(1) { left: 10%; animation-delay: 0s; } .heart:nth-child(2) { left: 50%; animation-delay: 4s; } .heart:nth-child(3) { left: 85%; animation-delay: 8s; }
+    @keyframes heartRain { 0% { opacity: 0; } 10% { opacity: 0.5; } 100% { transform: translateY(110vh); opacity: 0; } }
+    </style>
+    """
+
 st.markdown(f"""
+{css_hearts}
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@800&family=Montserrat:wght@600;700&display=swap');
 header, [data-testid="stHeader"], footer, [data-testid="stFooter"], #MainMenu {{ display: none !important; }}
@@ -53,17 +72,16 @@ ul[data-baseweb="menu"] li {{ background-color: #4A3728 !important; color: white
 ::placeholder {{ color: #D7CCC8 !important; opacity: 0.7; }}
 [data-testid="stSidebar"] {{ display: none; }}
 
-/* Bouton Valider plus gros */
-button[kind="secondary"] {{
-    background-color: {THEME['main_color']} !important; 
-    color: white !important; 
-    border-radius: 50px !important; 
-    font-weight: bold !important;
-    height: 3rem !important;
-    border: none !important;
+/* Style Panier */
+.cart-item {{
+    background-color: white; padding: 15px; border-radius: 15px; 
+    border-left: 5px solid {THEME['main_color']}; margin-bottom: 10px; 
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.05);
 }}
 </style>
 """, unsafe_allow_html=True)
+
+if EFFET_SPECIAL == "snow": st.snow()
 
 # --- ⚙️ SECRETS ---
 EMAIL_PRO = st.secrets.get("EMAIL_RECEPTION", "sncreat24@gmail.com")
@@ -76,7 +94,7 @@ if ETAT_VACANCES_GLOBAL == "OUI":
 def creer_lien_email(sujet, corps): return f"mailto:{EMAIL_PRO}?subject={quote(sujet)}&body={quote(corps)}"
 
 # --- DONNÉES ---
-PRIX_BOX_FIXE = {"❤️ Box Love (I ❤️ U)": 70}
+PRIX_BOX_LOVE_FIXE = 70  # CORRECTION PRIX DEMANDÉE
 PRIX_BOX_CHOCO = {"20cm": 53, "30cm": 70}
 PRIX_ROSES = {7: 20, 10: 25, 15: 30, 20: 35, 25: 40, 30: 45, 35: 50, 40: 55, 45: 60, 50: 65, 55: 70, 60: 75, 65: 80, 70: 90, 75: 95, 80: 100, 85: 105, 90: 110, 95: 115, 100: 120}
 COULEURS_ROSES = ["Noir 🖤", "Blanc 🤍", "Rouge ❤️", "Rose 🌸", "Bleu Clair ❄️", "Bleu Foncé 🦋", "Violet 💜"]
@@ -92,21 +110,21 @@ with col_logo_c:
     except: st.markdown("<h2 style='text-align: center;'>🌹</h2>", unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
-choix = st.radio("Je souhaite commander :", ["🌹 Un Bouquet", "🍫 Box Chocolat", "❤️ Box Love (I ❤️ U)"])
+
+# ==========================================
+# 🛍️ AJOUTER AU PANIER
+# ==========================================
+st.subheader("🛍️ Choisir un article")
+choix = st.selectbox("Je veux ajouter :", ["🌹 Un Bouquet", "🍫 Box Chocolat", "❤️ Box Love (I ❤️ U)"])
+
 st.markdown("---")
 
-details_produit_mail = ""
-details_options_mail = ""
-
-# --- PARTIE 1 : BOUQUET ---
+# --- CHOIX 1 : BOUQUET ---
 if choix == "🌹 Un Bouquet":
-    st.header("🌹 Mon Bouquet")
-    
-    # 1. Slider avec prix affiché en gros
+    st.header("🌹 Configurer Bouquet")
     taille = st.select_slider("Nombre de roses", options=list(PRIX_ROSES.keys()), format_func=lambda x: f"{x} Roses ({PRIX_ROSES[x]}€)")
     prix_base = PRIX_ROSES[taille]
-    
-    st.markdown(f"<h3 style='text-align:center; color:{THEME['main_color']}; margin-top:-10px;'>Prix Bouquet : {prix_base} €</h3>", unsafe_allow_html=True)
+    st.markdown(f"<h4 style='text-align:center; color:{THEME['main_color']}; margin-top:-10px;'>Prix de base : {prix_base} €</h4>", unsafe_allow_html=True)
     
     try: st.image(f"bouquet_{taille}.jpg", use_container_width=True)
     except: st.caption("📷 (Image)")
@@ -115,33 +133,37 @@ if choix == "🌹 Un Bouquet":
     choix_emballage = st.selectbox("Style d'emballage", ["Noir", "Blanc", "Rose", "Rouge", "Bordeaux", "Bleu", "Dior (+5€)", "Chanel (+5€)"])
     prix_papier = 5 if "(+5€)" in str(choix_emballage) else 0
     
-    # 2. Options avec texte immédiat
-    st.subheader("Ajouter des options")
+    st.write("**Ajouter des options :**")
     options_choisies = []
     details_sup_list = []
-    
     for opt in ACCESSOIRES_BOUQUET.keys():
-        if st.checkbox(opt):
+        if st.checkbox(opt, key=f"bq_{opt}"):
             options_choisies.append(opt)
             if "Bande" in opt:
-                val = st.text_input(f"📝 Écrire le prénom pour la bande :", key=f"txt_{opt}")
+                val = st.text_input(f"📝 Prénom pour la bande :", key=f"txt_bq_{opt}")
                 if val: details_sup_list.append(f"Prénom Bande: {val}")
             elif "Carte" in opt:
-                val = st.text_area(f"📝 Écrire le message de la carte :", key=f"txt_{opt}")
+                val = st.text_area(f"📝 Message carte :", key=f"txt_bq_{opt}")
                 if val: details_sup_list.append(f"Message Carte: {val}")
             elif "Initiale" in opt:
-                val = st.text_input(f"📝 Quelle initiale ?", key=f"txt_{opt}")
+                val = st.text_input(f"📝 Quelle initiale ?", key=f"txt_bq_{opt}")
                 if val: details_sup_list.append(f"Initiale: {val}")
-    
-    prix_total = prix_base + prix_papier + sum(ACCESSOIRES_BOUQUET[o] for o in options_choisies)
-    
-    details_produit_mail = f"• Modèle : BOUQUET {taille} roses\n• Couleur : {couleur_rose}\n• Emballage : {choix_emballage}"
-    details_options_mail = ", ".join(options_choisies)
-    if details_sup_list: details_options_mail += "\n\n📋 PERSONNALISATION :\n" + "\n".join(details_sup_list)
 
-# --- PARTIE 2 : BOX CHOCOLAT ---
+    prix_article = prix_base + prix_papier + sum(ACCESSOIRES_BOUQUET[o] for o in options_choisies)
+    
+    if st.button(f"➕ AJOUTER AU PANIER ({prix_article}€)", type="primary", use_container_width=True):
+        info_options = ", ".join(options_choisies)
+        if details_sup_list: info_options += " | " + " | ".join(details_sup_list)
+        st.session_state.panier.append({
+            "titre": f"BOUQUET {taille} roses",
+            "desc": f"Couleur: {couleur_rose} | Emballage: {choix_emballage}\nOptions: {info_options}",
+            "prix": prix_article
+        })
+        st.success("✅ Bouquet ajouté au panier !")
+
+# --- CHOIX 2 : BOX CHOCOLAT ---
 elif choix == "🍫 Box Chocolat":
-    st.header("🍫 Ma Box Chocolat")
+    st.header("🍫 Configurer Box")
     taille_box = st.selectbox("Taille :", list(PRIX_BOX_CHOCO.keys()))
     prix_base = PRIX_BOX_CHOCO[taille_box]
     try: st.image(f"box_{taille_box.lower()}.jpg", use_container_width=True)
@@ -150,107 +172,147 @@ elif choix == "🍫 Box Chocolat":
     liste_chocolats = st.multiselect("Chocolats :", ["Kinder Bueno", "Ferrero Rocher", "Milka", "Raffaello", "Schoko-Bons"])
     
     fleur_eternelle = st.checkbox("Ajouter des Roses Éternelles ?")
-    couleur_fleur_info = st.selectbox("Couleur roses :", COULEURS_ROSES) if fleur_eternelle else ""
+    couleur_fleur_info = st.selectbox("Couleur roses :", COULEURS_ROSES) if fleur_eternelle else "Aucune"
     
     options_choisies = []
     details_sup_list = []
-    st.write("**Options supplémentaires :**")
+    st.write("**Options :**")
     for opt in ACCESSOIRES_BOX_CHOCO.keys():
-        if st.checkbox(opt, key=f"chk_box_{opt}"):
+        if st.checkbox(opt, key=f"bx_{opt}"):
             options_choisies.append(opt)
             if "Initiale" in opt:
-                val = st.text_input("📝 Quelle initiale ?", key=f"txt_box_{opt}")
+                val = st.text_input("📝 Quelle initiale ?", key=f"txt_bx_{opt}")
                 if val: details_sup_list.append(f"Initiale: {val}")
             if "Bande" in opt:
-                val = st.text_input("📝 Texte de la bande :", key=f"txt_box_{opt}")
+                val = st.text_input("📝 Texte bande :", key=f"txt_bx_{opt}")
                 if val: details_sup_list.append(f"Bande: {val}")
 
-    prix_total = prix_base + sum(ACCESSOIRES_BOX_CHOCO[o] for o in options_choisies)
+    prix_article = prix_base + sum(ACCESSOIRES_BOX_CHOCO[o] for o in options_choisies)
     
-    details_produit_mail = f"• Modèle : BOX CHOCOLAT {taille_box}\n• Chocolats : {', '.join(liste_chocolats)}\n• Fleurs : {couleur_fleur_info}"
-    details_options_mail = ", ".join(options_choisies)
-    if details_sup_list: details_options_mail += "\n\n📋 PERSONNALISATION :\n" + "\n".join(details_sup_list)
+    if st.button(f"➕ AJOUTER AU PANIER ({prix_article}€)", type="primary", use_container_width=True):
+        info_options = ", ".join(options_choisies)
+        if details_sup_list: info_options += " | " + " | ".join(details_sup_list)
+        st.session_state.panier.append({
+            "titre": f"BOX CHOCOLAT {taille_box}",
+            "desc": f"Chocolats: {', '.join(liste_chocolats)}\nFleurs: {couleur_fleur_info}\nOptions: {info_options}",
+            "prix": prix_article
+        })
+        st.success("✅ Box ajoutée au panier !")
 
-# --- PARTIE 3 : BOX LOVE ---
+# --- CHOIX 3 : BOX LOVE ---
 else:
-    st.header("❤️ Box Love Signature")
+    st.header("❤️ Configurer Box Love")
     try: st.image("box_love.jpg", use_container_width=True)
     except: pass
     
     couleur_love = st.selectbox("Couleur des fleurs", COULEURS_ROSES)
     liste_chocolats = st.multiselect("Chocolats :", ["Kinder Bueno", "Ferrero Rocher"])
     
-    prix_total = PRIX_BOX_FIXE[choix]
-    details_produit_mail = f"• Modèle : BOX LOVE\n• Fleurs : {couleur_love}\n• Chocolats : {', '.join(liste_chocolats)}"
-    details_options_mail = "Aucune option sup."
-
-# --- LIVRAISON (RESTE DEHORS DU FORMULAIRE POUR LE PRIX) ---
-st.markdown("---")
-st.subheader("🚚 Livraison")
-mode_livraison = st.selectbox("Mode de réception", list(LIVRAISON_OPTIONS.keys()))
-frais_port = LIVRAISON_OPTIONS[mode_livraison]
-
-# CALCUL DU TOTAL
-total_final = prix_total + frais_port
-acompte = total_final * 0.40
-
-st.markdown(f"""
-<div style="background-color:white; padding:20px; border-radius:15px; text-align:center; border: 1px solid #E7D8D0; margin-bottom: 20px;">
-    <h3 style="margin:0; color:{THEME['text_color']};">Total : {total_final} €</h3>
-    <div style="background-color:{THEME['main_color']}; color:white; padding:10px 20px; border-radius:50px; margin-top:10px; font-weight:bold;">
-        🔒 Acompte requis : {acompte:.2f} €
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# --- FORMULAIRE CLIENT (RÉSOUT LE PROBLÈME "ENTRÉE") ---
-st.subheader("👤 Vos Coordonnées")
-with st.form("client_form"):
-    # Adresse à l'intérieur du formulaire
-    adresse_complete = ""
-    if mode_livraison != "📍 Retrait Gonesse":
-        rue = st.text_input("📍 Adresse (Rue, Ville, CP)")
-        adresse_complete = f"{rue}"
-        if "Hors France" in mode_livraison:
-            pays = st.text_input("🌍 Pays de destination")
-            adresse_complete += f" | PAYS : {pays}"
-    else:
-        st.info("Retrait à Gonesse (L'adresse exacte vous sera communiquée).")
-
-    nom = st.text_input("Votre Nom & Prénom")
-    tel = st.text_input("📞 Téléphone (Indispensable)")
-    inst = st.text_input("Votre Instagram")
+    prix_article = PRIX_BOX_LOVE_FIXE
     
-    # Bouton de validation unique
-    submitted = st.form_submit_button("✅ VALIDER MA COMMANDE")
+    if st.button(f"➕ AJOUTER AU PANIER ({prix_article}€)", type="primary", use_container_width=True):
+        st.session_state.panier.append({
+            "titre": "BOX LOVE (I ❤️ U)",
+            "desc": f"Fleurs: {couleur_love} | Chocolats: {', '.join(liste_chocolats)}",
+            "prix": prix_article
+        })
+        st.success("✅ Box Love ajoutée au panier !")
 
-if submitted:
-    if nom and inst and tel:
-        # MISE EN PAGE DU MAIL PROPRE ET PARFAIT
-        msg = f"""NOUVELLE COMMANDE SUN CREATION
+# ==========================================
+# 🛒 VISUALISATION PANIER & TOTAL
+# ==========================================
+st.markdown("---")
+st.header("🛒 Mon Panier")
+
+if not st.session_state.panier:
+    st.info("Votre panier est vide. Ajoutez des articles ci-dessus !")
+else:
+    total_articles = 0
+    # Affichage des articles
+    for i, item in enumerate(st.session_state.panier):
+        col_txt, col_del = st.columns([5, 1])
+        with col_txt:
+            st.markdown(f"""
+            <div class="cart-item">
+                <strong style="font-size:1.1rem; color:{THEME['main_color']}">{item['titre']}</strong>
+                <div style="float:right; font-weight:bold;">{item['prix']} €</div>
+                <br><span style="font-size:0.9rem; color:#555;">{item['desc']}</span>
+            </div>
+            """, unsafe_allow_html=True)
+        with col_del:
+            if st.button("❌", key=f"del_{i}"):
+                st.session_state.panier.pop(i)
+                st.rerun()
+        total_articles += item['prix']
+
+    # --- LIVRAISON ET FORMULAIRE FINAL ---
+    st.subheader("🚚 Livraison & Paiement")
+    
+    # Choix livraison
+    mode_livraison = st.selectbox("Mode de réception", list(LIVRAISON_OPTIONS.keys()))
+    frais_port = LIVRAISON_OPTIONS[mode_livraison]
+    
+    # Calculs Finaux
+    total_final = total_articles + frais_port
+    acompte = total_final * 0.40
+    
+    st.markdown(f"""
+    <div style="background-color:white; padding:20px; border-radius:15px; text-align:center; border: 2px solid {THEME['main_color']}; margin-bottom: 20px;">
+        <h3 style="margin:0; color:{THEME['text_color']};">TOTAL À RÉGLER : {total_final} €</h3>
+        <p style="margin:0; font-size:0.9rem;">(Dont Livraison : {frais_port}€)</p>
+        <div style="background-color:{THEME['main_color']}; color:white; padding:10px 20px; border-radius:50px; margin-top:10px; font-weight:bold; font-size:1.2rem;">
+            🔒 ACOMPTE REQUIS : {acompte:.2f} €
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # --- FORMULAIRE FINAL (Résout le souci "Entrée") ---
+    with st.form("checkout_form"):
+        st.write("**👤 Vos Coordonnées**")
+        
+        # Logique Pays restaurée DANS le formulaire
+        adresse_finale = "Retrait sur place"
+        if mode_livraison != "📍 Retrait Gonesse":
+            rue = st.text_input("📍 Adresse complète (Rue, Ville, CP)")
+            if "Hors France" in mode_livraison:
+                pays = st.text_input("🌍 Pays de destination")
+                adresse_finale = f"{rue} | PAYS : {pays}"
+            else:
+                adresse_finale = rue
+        
+        nom = st.text_input("Votre Nom & Prénom")
+        tel = st.text_input("📞 Téléphone (Indispensable)")
+        inst = st.text_input("Votre Instagram")
+        
+        submitted = st.form_submit_button("✅ VALIDER MA COMMANDE")
+    
+    if submitted:
+        if nom and tel and inst:
+            # Construction du mail Propre
+            lignes_articles = "\n".join([f"• {it['titre']} ({it['prix']}€)\n  {it['desc']}" for it in st.session_state.panier])
+            
+            msg = f"""✨ NOUVELLE COMMANDE SUN CREATION ✨
 ================================
 👤 CLIENT
-Nom : {nom}
-Tél : {tel}
-Insta : {inst}
+• Nom : {nom}
+• Tél : {tel}
+• Insta : {inst}
 --------------------------------
-📦 COMMANDE
-{details_produit_mail}
-
-➕ OPTIONS
-{details_options_mail if details_options_mail else "Aucune"}
+🛒 PANIER ({len(st.session_state.panier)} articles)
+{lignes_articles}
 --------------------------------
 🚚 LIVRAISON
-Mode : {mode_livraison}
-Adresse : {adresse_complete if adresse_complete else "Retrait sur place"}
+• Mode : {mode_livraison}
+• Adresse : {adresse_finale}
 --------------------------------
 💰 PAIEMENT
-TOTAL : {total_final} €
-ACOMPTE (40%) : {acompte:.2f} €
+• TOTAL : {total_final} €
+• 🔒 ACOMPTE (40%) : {acompte:.2f} €
 ================================"""
-        
-        st.success("Commande prête ! Cliquez ci-dessous :")
-        st.markdown(f'<a href="{creer_lien_email(f"Commande {nom}", msg)}" style="background-color:{THEME["main_color"]}; color:white; padding:15px; display:block; text-align:center; border-radius:50px; font-weight:bold; text-decoration:none;">📨 ENVOYER LA COMMANDE</a>', unsafe_allow_html=True)
-        st.balloons()
-    else:
-        st.error("⚠️ Merci de remplir votre Nom, Téléphone et Instagram.")
+
+            lien_mail = creer_lien_email(f"Commande {nom}", msg)
+            st.success("🎉 Commande prête !")
+            st.markdown(f'<a href="{lien_mail}" style="background-color:{THEME["main_color"]}; color:white; padding:15px; display:block; text-align:center; border-radius:50px; font-weight:bold; text-decoration:none; font-size:1.1rem;">📨 ENVOYER LA COMMANDE</a>', unsafe_allow_html=True)
+            st.balloons()
+        else:
+            st.error("⚠️ Merci de remplir Nom, Téléphone et Instagram.")
