@@ -62,7 +62,6 @@ h1, h2, h3 {{ font-family: 'Playfair Display', serif !important; color: {THEME['
 }}
 
 /* VISIBILITÉ MENUS DÉROULANTS & CHAMPS */
-/* Correction ici : suppression de .stDateInput div pour ne pas colorer le fond du texte */
 div[data-baseweb="select"] > div, div[data-baseweb="input"] > div, textarea {{
     background-color: #4A3728 !important; border: 1px solid #D4AF37 !important; color: white !important;
 }}
@@ -103,6 +102,12 @@ ACCESSOIRES_BOUQUET = {"🎗️ Bande (+15€)": 15, "💌 Carte (+5€)": 5, "�
 ACCESSOIRES_BOX_CHOCO = {"🅰️ Initiale (+5€)": 5, "🧸 Doudou (+3.50€)": 3.5, "🎗️ Bande (+10€)": 10, "🎂 Topper (+2€)": 2, "🐻 2 doudou (+7.5€)": 7.5}
 LIVRAISON_OPTIONS = {"📍 Retrait Gonesse": 0, "📦 Colis IDF - 12€": 12, "📦 Colis France - 12€": 12, "🌍 Hors France - 15€": 15, "🚗 Uber (À CHARGE)": 0}
 
+# --- NOUVELLE ORGANISATION DES EMBALLAGES AVEC EMOJIS ---
+EMBALLAGES_CLASSIQUE = ["🖤 Noir", "🤍 Blanc", "🌸 Rose", "🍷 Bordeaux", "❤️ Rouge", "🧊 Brun Glacé", "🍦 Jaune Crème", "🪵 Marron", "🟢 Vert", "🟠 Orange", "🍆 Aubergine", "💜 Violet", "☁️ Bleu Ciel", "🔵 Bleu", "☕ Café"]
+EMBALLAGES_BORDURE = ["🎞️ Noir Bordure Noire", "✨ Noir Bordure Dorée", "🖼️ Noir Bordure Blanche", "🤍 Blanc Bordure Blanche", "🖼️ Blanc Bordure Noire", "✨ Blanc Bordure Dorée", "🌸 Rose Bordure Rose", "✨ Rose Bordure Dorée", "✨ Bordeaux Bordure Dorée", "🥈 Argenté Bordure Argenté", "❤️ Rouge Bordure Rouge", "🔵 Bleu Bordure Bleue", "🥇 Doré Bordure Dorée", "🌗 Noir/Doré", "🌓 Rouge/Noir", "🌗 Rose/Doré", "🏁 Marbre Noir/Blanc"]
+EMBALLAGES_LUXE = ["✨ Dior Noir", "✨ Dior Bordeaux", "✨ Dior Beige", "✨ Dior Rose", "✨ Dior Rose Fushia", "✨ Dior Bleu", "✨ Dior Vert Menthe", "✨ Dior Violet", "💼 Chanel Noir/Doré", "👜 LV Noir/Doré", "👜 LV Rose/Blanc", "🐱 LV Hello Kitty Rose/Blanc", "🐱 LV Hello Kitty Blanc/Noir", "🐱 LV Hello Kitty Blanc/Rouge"]
+
+
 # --- HEADER ---
 st.markdown('<p class="main-title">Sun Creation</p>', unsafe_allow_html=True)
 col_logo_l, col_logo_c, col_logo_r = st.columns([1, 1.5, 1])
@@ -128,9 +133,38 @@ if choix == "🌹 Un Bouquet":
     st.markdown(f"<h4 style='text-align:center; color:{THEME['main_color']}; margin-top:-10px;'>Prix de base : {prix_base} €</h4>", unsafe_allow_html=True)
     try: st.image(f"bouquet_{taille}.jpg", use_container_width=True)
     except: st.caption("📷 (Image)")
+    
     couleur_rose = st.selectbox("Couleur des roses", COULEURS_ROSES)
-    choix_emballage = st.selectbox("Style d'emballage", ["Noir", "Blanc", "Rose", "Rouge", "Bordeaux", "Bleu", "Dior (+5€)", "Chanel (+5€)"])
-    prix_papier = 5 if "(+5€)" in str(choix_emballage) else 0
+    
+    st.markdown("---")
+    st.subheader("🎀 Choix de l'emballage")
+    
+    categorie_emballage = st.radio("Type d'emballage :", ["Classique (Normal)", "Avec Bordures/Spécial", "Luxe (+5€)"])
+    
+    prix_papier = 0
+    liste_finale_emballages = []
+    image_emballage_cat = ""
+
+    if categorie_emballage == "Classique (Normal)":
+        image_emballage_cat = "embal_classique.jpg"
+        liste_finale_emballages = EMBALLAGES_CLASSIQUE
+        prix_papier = 0
+    elif categorie_emballage == "Avec Bordures/Spécial":
+        image_emballage_cat = "embal_bordure.jpg"
+        liste_finale_emballages = EMBALLAGES_BORDURE
+        prix_papier = 0
+    else: # Luxe
+        image_emballage_cat = "embal_luxe.jpg"
+        liste_finale_emballages = EMBALLAGES_LUXE
+        prix_papier = 5
+        
+    try: st.image(image_emballage_cat, use_container_width=True)
+    except: st.caption(f"📷 (Image {categorie_emballage})")
+
+    # Utilisation de selectbox comme pour les roses pour éviter le clavier
+    choix_emballage = st.selectbox("Couleur exacte de l'emballage", liste_finale_emballages)
+    
+    st.markdown("---")
     st.write("**Ajouter des options :**")
     options_choisies = []
     details_sup_list = []
@@ -151,9 +185,10 @@ if choix == "🌹 Un Bouquet":
     if st.button(f"➕ AJOUTER AU PANIER ({prix_article}€)", type="primary", use_container_width=True):
         info_options = ", ".join(options_choisies)
         if details_sup_list: info_options += " | " + " | ".join(details_sup_list)
+        nom_emballage_complet = f"{categorie_emballage} - {choix_emballage}"
         st.session_state.panier.append({
             "titre": f"BOUQUET {taille} roses",
-            "desc": f"Couleur: {couleur_rose} | Emballage: {choix_emballage}\nOptions: {info_options}",
+            "desc": f"Couleur: {couleur_rose} | Emballage: {nom_emballage_complet}\nOptions: {info_options}",
             "prix": prix_article
         })
         st.success("✅ Bouquet ajouté au panier !")
@@ -197,13 +232,24 @@ else:
     st.header("❤️ Configurer Box Love")
     try: st.image("box_love.jpg", use_container_width=True)
     except: pass
-    couleur_love = st.selectbox("Couleur des fleurs", COULEURS_ROSES)
-    liste_chocolats = st.multiselect("Chocolats :", ["Kinder Bueno", "Ferrero Rocher", "Milka", "Raffaello", "Schoko-Bons"])
+    
+    type_remplissage = st.radio("Je veux remplir la box avec :", ["Fleurs (Roses)", "Chocolats"])
+    
+    desc_contenu = ""
+    
+    if type_remplissage == "Fleurs (Roses)":
+        couleur_love = st.selectbox("Couleur des fleurs", COULEURS_ROSES)
+        desc_contenu = f"Remplissage : 100% Fleurs ({couleur_love})"
+    else:
+        liste_chocolats = st.multiselect("Choix des chocolats :", ["Kinder Bueno", "Ferrero Rocher", "Milka", "Raffaello", "Schoko-Bons"])
+        desc_contenu = f"Remplissage : 100% Chocolats ({', '.join(liste_chocolats)})"
+
     prix_article = PRIX_BOX_LOVE_FIXE
+    
     if st.button(f"➕ AJOUTER AU PANIER ({prix_article}€)", type="primary", use_container_width=True):
         st.session_state.panier.append({
             "titre": "BOX LOVE (I ❤️ U)",
-            "desc": f"Fleurs: {couleur_love} | Chocolats: {', '.join(liste_chocolats)}",
+            "desc": desc_contenu,
             "prix": prix_article
         })
         st.success("✅ Box Love ajoutée au panier !")
@@ -218,7 +264,6 @@ if not st.session_state.panier:
     st.info("Votre panier est vide. Ajoutez des articles ci-dessus !")
 else:
     total_articles = 0
-    # Affichage des articles
     for i, item in enumerate(st.session_state.panier):
         col_txt, col_del = st.columns([5, 1])
         with col_txt:
@@ -235,12 +280,9 @@ else:
                 st.rerun()
         total_articles += item['prix']
 
-    # --- LIVRAISON ET FORMULAIRE FINAL ---
     st.subheader("🚚 Livraison & Paiement")
-    # Choix livraison
     mode_livraison = st.selectbox("Mode de réception", list(LIVRAISON_OPTIONS.keys()))
     frais_port = LIVRAISON_OPTIONS[mode_livraison]
-    # Calculs Finaux
     total_final = total_articles + frais_port
     acompte = total_final * 0.40
     st.markdown(f"""
@@ -253,9 +295,7 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
-    # --- FORMULAIRE FINAL ---
     with st.form("checkout_form"):
-        # Date de livraison (Délai 7 jours)
         st.write("**📅 Date de livraison souhaitée**")
         min_date = date.today() + timedelta(days=7)
         date_livraison = st.date_input("Choisir une date (Délai min. 7 jours)", min_value=min_date)
